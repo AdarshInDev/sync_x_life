@@ -86,6 +86,14 @@ class FocusMusicService extends BaseAudioHandler
       }
     });
 
+    // Listen for song completion to auto-advance
+    _player.processingStateStream.listen((state) {
+      if (state == ProcessingState.completed) {
+        // Song finished, auto-advance to next
+        skipToNext();
+      }
+    });
+
     _loadLastTrack();
   }
 
@@ -197,13 +205,8 @@ class FocusMusicService extends BaseAudioHandler
       if (_currentIndex < _queue.length - 1) {
         _currentIndex++;
       } else {
-        // Loop behavior handled here or via loopMode
-        final loopMode = _player.loopMode;
-        if (loopMode == LoopMode.all) {
-          _currentIndex = 0;
-        } else {
-          return; // End of playlist
-        }
+        // Always loop back to start when reaching the end
+        _currentIndex = 0;
       }
     }
     await _playCurrentQueueItem();
@@ -238,11 +241,7 @@ class FocusMusicService extends BaseAudioHandler
 
   void toggleShuffle() {
     isShuffleMode.value = !isShuffleMode.value;
-    if (isShuffleMode.value) {
-      _player.setShuffleModeEnabled(true);
-    } else {
-      _player.setShuffleModeEnabled(false);
-    }
+    // We handle shuffle manually in skipToNext/skipToPrevious
   }
 
   // --- Core Playback ---
