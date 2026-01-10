@@ -9,25 +9,34 @@ class HubDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              const SizedBox(height: 20),
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildActivityMap(),
-              const SizedBox(height: 20),
-              _buildBrightDay(),
-              const SizedBox(height: 20),
-              _buildBentoGrid(context),
-              const SizedBox(height: 120), // Space for Bottom Nav
-            ]),
+    return RefreshIndicator(
+      onRefresh: () async {
+        // TODO: Implement actual data fetching
+        await Future.delayed(const Duration(milliseconds: 1500));
+      },
+      color: AppColors.primary,
+      backgroundColor: AppColors.surfaceDark,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                const SizedBox(height: 20),
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildActivityMap(),
+                const SizedBox(height: 20),
+                _buildBrightDay(),
+                const SizedBox(height: 20),
+                _buildBentoGrid(context),
+                const SizedBox(height: 120), // Space for Bottom Nav
+              ]),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

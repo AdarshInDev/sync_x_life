@@ -1,9 +1,51 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/models/data_models.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../core/theme/app_colors.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  final _supabaseService = SupabaseService();
+  UserProfile? _profile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await _supabaseService.getProfile();
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  String _getInitials() {
+    if (_profile?.username == null) return 'U';
+    final parts = _profile!.username!.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return _profile!.username![0].toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,16 +136,20 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      // Placeholder Avatar
-                      child: const Center(
-                        child: Text(
-                          "AR",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                      child: Center(
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                )
+                                : Text(
+                                  _getInitials(),
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                       ),
                     ),
                     Container(
@@ -127,9 +173,9 @@ class SettingsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Alex Rivera",
-                        style: TextStyle(
+                      Text(
+                        _profile?.username ?? 'User',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -137,16 +183,16 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Row(
-                        children: const [
-                          Icon(
+                        children: [
+                          const Icon(
                             Icons.local_fire_department,
                             color: Colors.orange,
                             size: 18,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
-                            "12 Day Streak",
-                            style: TextStyle(
+                            "${_profile?.streakCount ?? 0} Day Streak",
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -155,9 +201,11 @@ class SettingsPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "Sync Member since 2023",
-                        style: TextStyle(
+                      Text(
+                        _profile?.createdAt != null
+                            ? "Member since ${_profile!.createdAt.year}"
+                            : "New Member",
+                        style: const TextStyle(
                           color: AppColors.textSubtle,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -306,6 +354,56 @@ class SettingsPage extends StatelessWidget {
                   subtitle: "Sign out of account",
                   color: AppColors.textPrimary,
                   hoverColor: Colors.red,
+                  onTap: () async {
+                    final shouldLogout = await showDialog<bool>(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            backgroundColor: AppColors.surfaceDark,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            title: const Text(
+                              'Log Out',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            content: const Text(
+                              'Are you sure you want to log out?',
+                              style: TextStyle(color: AppColors.textSubtle),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.of(context).pop(false),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(color: AppColors.textSubtle),
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed:
+                                    () => Navigator.of(context).pop(true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Log Out'),
+                              ),
+                            ],
+                          ),
+                    );
+
+                    if (shouldLogout == true) {
+                      await SupabaseService().signOut();
+                      // AuthGate handles navigation
+                    }
+                  },
                 ),
               ),
             ],
@@ -335,53 +433,57 @@ class SettingsPage extends StatelessWidget {
     required Color hoverColor,
     bool useCustomTitle = false,
     Widget? extra,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      height: 160,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 160,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              ),
+              child: Icon(icon, color: AppColors.textSecondary, size: 20),
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 20),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (useCustomTitle && extra != null)
-                extra
-              else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (useCustomTitle && extra != null)
+                  extra
+                else
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                const SizedBox(height: 4),
                 Text(
-                  title,
+                  subtitle,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: Colors.white,
+                    fontSize: 10,
+                    color: AppColors.textSubtle,
                   ),
                 ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textSubtle,
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

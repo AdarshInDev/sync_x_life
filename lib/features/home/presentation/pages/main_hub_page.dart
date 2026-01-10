@@ -1,3 +1,4 @@
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -15,14 +16,21 @@ class MainHubPage extends StatefulWidget {
 }
 
 class _MainHubPageState extends State<MainHubPage> {
-  int _currentIndex = 2; // Default to Ritual
+  final _pageController = PageController(initialPage: 2);
+  final _controller = NotchBottomBarController(index: 2);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   final List<Widget> _pages = [
-    const FocusModePage(), // 0: Focus Mode (Timer & Tasks)
-    const HubDashboardAltPage(), // 1: Hub (Main Dashboard)
-    const ReflectionPage(), // 2: Ritual (Middle)
-    const StatsPage(), // 3: Stats
-    const SettingsPage(), // 4: Settings
+    const FocusModePage(), // 0
+    const HubDashboardAltPage(), // 1
+    const ReflectionPage(), // 2
+    const StatsPage(), // 3
+    const SettingsPage(), // 4
   ];
 
   @override
@@ -33,7 +41,7 @@ class _MainHubPageState extends State<MainHubPage> {
         bottom: false,
         child: Stack(
           children: [
-            // Background Glow (Global)
+            // Persistent Background Glow
             Positioned(
               top: -100,
               right: -100,
@@ -48,138 +56,92 @@ class _MainHubPageState extends State<MainHubPage> {
               ).blur(100),
             ),
 
-            // Persistent Content
-            Positioned.fill(
-              child: IndexedStack(index: _currentIndex, children: _pages),
+            // Content
+            PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: _pages,
             ),
 
-            // Bottom Navigation (Glass)
+            // Animated Bottom Bar
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              child: _buildBottomNav(context),
+              child: AnimatedNotchBottomBar(
+                notchBottomBarController: _controller,
+                color: AppColors.surfaceHighlight,
+                showLabel: true,
+                shadowElevation: 5,
+                kBottomRadius: 28.0,
+                notchColor: AppColors.primary,
+                removeMargins: false,
+                bottomBarWidth: MediaQuery.of(context).size.width,
+                durationInMilliSeconds: 300,
+                itemLabelStyle: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSubtle,
+                ),
+                elevation: 1,
+                bottomBarItems: const [
+                  BottomBarItem(
+                    inActiveItem: Icon(
+                      Icons.timer_outlined,
+                      color: AppColors.textSubtle,
+                    ),
+                    activeItem: Icon(
+                      Icons.timer,
+                      color: Colors.black,
+                    ), // Black on Primary notch
+                    itemLabel: 'Focus',
+                  ),
+                  BottomBarItem(
+                    inActiveItem: Icon(
+                      Icons.grid_view_outlined,
+                      color: AppColors.textSubtle,
+                    ),
+                    activeItem: Icon(
+                      Icons.grid_view_rounded,
+                      color: Colors.black,
+                    ),
+                    itemLabel: 'Hub',
+                  ),
+                  BottomBarItem(
+                    inActiveItem: Icon(
+                      Icons.spa_outlined,
+                      color: AppColors.textSubtle,
+                    ),
+                    activeItem: Icon(Icons.spa, color: Colors.black),
+                    itemLabel: 'Ritual',
+                  ),
+                  BottomBarItem(
+                    inActiveItem: Icon(
+                      Icons.bar_chart_outlined,
+                      color: AppColors.textSubtle,
+                    ),
+                    activeItem: Icon(
+                      Icons.bar_chart_rounded,
+                      color: Colors.black,
+                    ),
+                    itemLabel: 'Stats',
+                  ),
+                  BottomBarItem(
+                    inActiveItem: Icon(
+                      Icons.settings_outlined,
+                      color: AppColors.textSubtle,
+                    ),
+                    activeItem: Icon(Icons.settings, color: Colors.black),
+                    itemLabel: 'Settings',
+                  ),
+                ],
+                onTap: (index) {
+                  _pageController.jumpToPage(index);
+                },
+                kIconSize: 24.0,
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 16, bottom: 32, left: 16, right: 16),
-      decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.9),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildNavItem(0, Icons.timer_outlined, "Focus"),
-          _buildNavItem(1, Icons.grid_view_rounded, "Hub"),
-          _buildRitualNavItem(2), // Special Ritual Button
-          _buildNavItem(3, Icons.bar_chart_rounded, "Stats"),
-          _buildNavItem(4, Icons.settings_outlined, "Settings"),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRitualNavItem(int index) {
-    final bool isActive = _currentIndex == index;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primary : AppColors.surfaceHighlight,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color:
-                    isActive
-                        ? AppColors.primary
-                        : Colors.white.withValues(alpha: 0.2),
-              ),
-              boxShadow: [
-                if (isActive)
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 15,
-                  ),
-              ],
-            ),
-            child: Icon(
-              Icons.spa,
-              color: isActive ? Colors.black : Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            "Ritual",
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final bool isActive = _currentIndex == index;
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(0),
-            decoration:
-                isActive
-                    ? BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                        ),
-                      ],
-                    )
-                    : null,
-            child: Icon(
-              icon,
-              color: isActive ? AppColors.primary : AppColors.textSubtle,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-              color: isActive ? AppColors.primary : AppColors.textSubtle,
-            ),
-          ),
-        ],
       ),
     );
   }

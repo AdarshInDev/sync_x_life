@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/models/data_models.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../widgets/audio_recorder_widget.dart';
+import 'reflection_history_page.dart';
 
 class ReflectionPage extends StatefulWidget {
   const ReflectionPage({super.key});
@@ -10,6 +14,95 @@ class ReflectionPage extends StatefulWidget {
 }
 
 class _ReflectionPageState extends State<ReflectionPage> {
+  final _supabaseService = SupabaseService();
+  final _highlightController = TextEditingController();
+  final _blockerController = TextEditingController();
+  final _improvementController = TextEditingController();
+  double _moodScore = 7.0;
+  double _productivityScore = 75.0;
+  bool _isSaving = false;
+
+  // Audio recording data
+  String? _recordedAudioPath;
+  String? _audioTranscript;
+
+  @override
+  void dispose() {
+    _highlightController.dispose();
+    _blockerController.dispose();
+    _improvementController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveReflection() async {
+    if (_isSaving) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final user = _supabaseService.currentUser;
+      if (user == null) return;
+
+      String? uploadedAudioUrl;
+
+      if (_recordedAudioPath != null) {
+        uploadedAudioUrl = await _supabaseService.uploadAudioFile(
+          _recordedAudioPath!,
+          user.id,
+        );
+      }
+
+      final reflection = Reflection(
+        id: '',
+        userId: user.id,
+        date: DateTime.now(),
+        moodScore: _moodScore.round(),
+        productivityScore: _productivityScore.round(),
+        title: 'Evening Reflection',
+        highlight: _highlightController.text,
+        blocker: _blockerController.text,
+        improvement: _improvementController.text,
+        audioUrl: uploadedAudioUrl,
+        blockerNote: _audioTranscript,
+      );
+
+      await _supabaseService.saveReflection(reflection);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Reflection saved successfully!'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+
+        // Clear inputs
+        _highlightController.clear();
+        _blockerController.clear();
+        _improvementController.clear();
+        setState(() {
+          _moodScore = 7.0;
+          _productivityScore = 75.0;
+          _recordedAudioPath = null;
+          _audioTranscript = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving reflection: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,6 +122,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 icon: Icons.emoji_events,
                 color: AppColors.accentYellow,
                 hint: "What was your biggest win today?",
+                controller: _highlightController,
               ),
               const SizedBox(height: 20),
               _buildInputCard(
@@ -36,6 +130,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 icon: Icons.block,
                 color: AppColors.error,
                 hint: "What stopped you from flowing?",
+                controller: _blockerController,
               ),
               const SizedBox(height: 20),
               _buildInputCard(
@@ -43,14 +138,36 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 icon: Icons.trending_up,
                 color: AppColors.accentBlue,
                 hint: "One specific thing to improve tomorrow...",
+                controller: _improvementController,
               ),
               const SizedBox(height: 32),
-              _buildVoiceCard(),
+              AudioRecorderWidget(
+                onRecordingComplete: (path, transcript) {
+                  setState(() {
+                    _recordedAudioPath = path;
+                    _audioTranscript = transcript;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        '✅ Recording saved! Complete the ritual to upload and save.',
+                      ),
+                      backgroundColor: AppColors.primary,
+                    ),
+                  );
+                },
+                onCancel: () {
+                  setState(() {
+                    _recordedAudioPath = null;
+                    _audioTranscript = null;
+                  });
+                },
+              ),
               const SizedBox(height: 32),
               _buildSyncInsightsCard(),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: _isSaving ? null : _saveReflection,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.black,
@@ -61,20 +178,32 @@ class _ReflectionPageState extends State<ReflectionPage> {
                   shadowColor: AppColors.primary.withValues(alpha: 0.5),
                   elevation: 10,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.check_circle_outline),
-                    SizedBox(width: 8),
-                    Text(
-                      "Complete Ritual",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
+                child:
+                    _isSaving
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.black,
+                            ),
+                          ),
+                        )
+                        : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.check_circle_outline),
+                            SizedBox(width: 8),
+                            Text(
+                              "Complete Ritual",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
               ),
               const SizedBox(height: 120), // Bottom Nav Clearance
             ],
@@ -191,6 +320,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
     required IconData icon,
     required Color color,
     required String hint,
+    required TextEditingController controller,
   }) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -228,6 +358,7 @@ class _ReflectionPageState extends State<ReflectionPage> {
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: controller,
             maxLines: 4,
             style: const TextStyle(color: Color(0xFFE2E8F0)), // slate-200
             decoration: InputDecoration(
@@ -402,12 +533,22 @@ class _ReflectionPageState extends State<ReflectionPage> {
                   fontSize: 14,
                 ),
               ),
-              const Text(
-                "View Report",
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReflectionHistoryPage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "View Report",
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],

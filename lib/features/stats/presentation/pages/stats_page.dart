@@ -13,26 +13,35 @@ class StatsPage extends StatelessWidget {
       color: AppColors.background,
       child: SafeArea(
         bottom: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildMoodChart(),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(child: _buildProdScoreCard()),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildAvgMoodCard()),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildBlockerCard(),
-              const SizedBox(height: 120), // Bottom Nav Clearance
-            ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // TODO: Implement actual data fetching
+            await Future.delayed(const Duration(milliseconds: 1500));
+          },
+          color: AppColors.primary,
+          backgroundColor: AppColors.surfaceDark,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildMoodChart(),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(child: _buildProdScoreCard()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildAvgMoodCard()),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildBlockerCard(),
+                const SizedBox(height: 120), // Bottom Nav Clearance
+              ],
+            ),
           ),
         ),
       ),
