@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/focus/data/models/playlist_model.dart';
 import '../models/data_models.dart';
 
 class SupabaseService {
@@ -408,6 +409,77 @@ class SupabaseService {
       await client.storage.from('reflection-audio').remove([storagePath]);
     } catch (e) {
       print('Error deleting audio file: $e');
+    }
+  }
+
+  // --- Playlists ---
+  Future<void> createPlaylist(String name) async {
+    final user = currentUser;
+    if (user == null) return;
+
+    await client.from('playlists').insert({'user_id': user.id, 'name': name});
+  }
+
+  Future<List<Playlist>> getPlaylists() async {
+    final user = currentUser;
+    if (user == null) return [];
+
+    final data = await client
+        .from('playlists')
+        .select()
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false);
+
+    return (data as List).map((e) => Playlist.fromJson(e)).toList();
+  }
+
+  Future<void> addToPlaylist({
+    required String playlistId,
+    required String videoId,
+    required String title,
+    required String author,
+    String? imageUrl,
+  }) async {
+    // Check if song already exists in this playlist
+    final existing =
+        await client
+            .from('playlist_items')
+            .select()
+            .eq('playlist_id', playlistId)
+            .eq('video_id', videoId)
+            .maybeSingle();
+
+    if (existing != null) {
+      throw Exception('This song is already in the playlist');
+    }
+
+    await client.from('playlist_items').insert({
+      'playlist_id': playlistId,
+      'video_id': videoId,
+      'title': title,
+      'author': author,
+      'image_url': imageUrl,
+      'sort_order': 0,
+    });
+  }
+
+  Future<List<PlaylistItem>> getPlaylistItems(String playlistId) async {
+    final data = await client
+        .from('playlist_items')
+        .select()
+        .eq('playlist_id', playlistId)
+        .order('sort_order', ascending: true)
+        .order('added_at', ascending: true);
+
+    return (data as List).map((e) => PlaylistItem.fromJson(e)).toList();
+  }
+
+  Future<void> updatePlaylistItemsOrder(List<PlaylistItem> items) async {
+    for (int i = 0; i < items.length; i++) {
+      await client
+          .from('playlist_items')
+          .update({'sort_order': i})
+          .eq('id', items[i].id);
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../services/focus_music_service.dart';
+import '../widgets/add_to_playlist_sheet.dart';
 import '../widgets/focus_player_widget.dart';
 
 class OnlineMusicPage extends StatefulWidget {
@@ -159,10 +160,37 @@ class _OnlineMusicPageState extends State<OnlineMusicPage> {
                                 fontSize: 12,
                               ),
                             ),
-                            trailing: const Icon(
-                              Icons.play_circle_filled,
-                              color: AppColors.primary,
-                              size: 32,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.playlist_add,
+                                    color: AppColors.textSubtle,
+                                  ),
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      backgroundColor: Colors.transparent,
+                                      isScrollControlled: true,
+                                      builder:
+                                          (context) => AddToPlaylistSheet(
+                                            videoId: video.id.value,
+                                            title: video.title,
+                                            author: video.author,
+                                            imageUrl:
+                                                video.thumbnails.lowResUrl,
+                                          ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.play_circle_filled,
+                                  color: AppColors.primary,
+                                  size: 32,
+                                ),
+                              ],
                             ),
                             onTap: () {
                               _musicService.playYoutubeTrack(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -141,6 +142,111 @@ class FocusMusicService extends BaseAudioHandler
   @override
   Future<void> seek(Duration position) => _player.seek(position);
 
+  // --- Queue Management ---
+  List<FocusTrack> _queue = [];
+  int _currentIndex = -1;
+  final _queueController = StreamController<List<FocusTrack>>.broadcast();
+  Stream<List<FocusTrack>> get queueStream => _queueController.stream;
+
+  final ValueNotifier<bool> isShuffleMode = ValueNotifier(false);
+
+  // Play a whole playlist, starting at specific index
+  Future<void> playPlaylist(List<FocusTrack> tracks, int initialIndex) async {
+    _queue = List.from(tracks);
+    _currentIndex = initialIndex;
+    _queueController.add(_queue);
+
+    // If shuffle is already on, we might want to respect that,
+    // but usually user expects to play *this* song first.
+    // For now, simple standard playback.
+
+    await _playCurrentQueueItem();
+  }
+
+  Future<void> _playCurrentQueueItem() async {
+    if (_queue.isEmpty || _currentIndex < 0 || _currentIndex >= _queue.length)
+      return;
+
+    final track = _queue[_currentIndex];
+
+    // Check if it's a YouTube track that needs resolving (url is empty or stale)
+    // We assume if it has an ID but no direct stream URL, we resolve it.
+    // For simplicity, we just call resolve if it looks like a YouTube ID
+    if (track.url.isEmpty || !track.url.startsWith('http')) {
+      await playYoutubeTrack(
+        track.id,
+        track.title,
+        track.category,
+        track.imageUrl,
+      );
+      // Update queue item with resolved URL if we wanted to cache it,
+      // but playYoutubeTrack calls playTrack which sets _currentFocusTrack
+    } else {
+      await playTrack(track);
+    }
+  }
+
+  @override
+  Future<void> skipToNext() async {
+    if (_queue.isEmpty) return;
+
+    if (isShuffleMode.value) {
+      // Pick random index
+      _currentIndex = Random().nextInt(_queue.length);
+    } else {
+      if (_currentIndex < _queue.length - 1) {
+        _currentIndex++;
+      } else {
+        // Loop behavior handled here or via loopMode
+        final loopMode = _player.loopMode;
+        if (loopMode == LoopMode.all) {
+          _currentIndex = 0;
+        } else {
+          return; // End of playlist
+        }
+      }
+    }
+    await _playCurrentQueueItem();
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    if (_queue.isEmpty) return;
+
+    // If more than 3 sec in, restart song
+    if (_player.position.inSeconds > 3) {
+      _player.seek(Duration.zero);
+      return;
+    }
+
+    if (isShuffleMode.value) {
+      // Ideally we keep a history stack, but for simple random:
+      // just pick random again or do nothing
+      _currentIndex = Random().nextInt(_queue.length);
+    } else {
+      if (_currentIndex > 0) {
+        _currentIndex--;
+      } else {
+        final loopMode = _player.loopMode;
+        if (loopMode == LoopMode.all) {
+          _currentIndex = _queue.length - 1;
+        }
+      }
+    }
+    await _playCurrentQueueItem();
+  }
+
+  void toggleShuffle() {
+    isShuffleMode.value = !isShuffleMode.value;
+    if (isShuffleMode.value) {
+      _player.setShuffleModeEnabled(true);
+    } else {
+      _player.setShuffleModeEnabled(false);
+    }
+  }
+
+  // --- Core Playback ---
+
   Future<void> playTrack(FocusTrack track) async {
     _currentFocusTrack = track;
     _trackController.add(track);
@@ -158,8 +264,15 @@ class FocusMusicService extends BaseAudioHandler
 
     try {
       await _player.setUrl(track.url);
-      _player.play(); // Don't await completion
+      _player.play();
       _saveLastTrack(track);
+
+      // Auto-next listener
+      _player.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          skipToNext();
+        }
+      });
     } catch (e) {
       print("Error playing track: $e");
     }
@@ -185,6 +298,8 @@ class FocusMusicService extends BaseAudioHandler
       _loadingVideoId = videoId;
       adaptiveLoading.value = true;
 
+      // Only stop if playing a DIFFERENT track to allow smooth transition potentially?
+      // Actually safe to stop.
       if (_player.playing) {
         await _player.stop();
       }
@@ -218,7 +333,23 @@ class FocusMusicService extends BaseAudioHandler
 
       if (_loadingVideoId != videoId) return;
 
-      await playTrack(track);
+      // Direct internal play to avoid circular queue logic if just playing single
+      // But we update current track for UI
+      _currentFocusTrack = track;
+      _trackController.add(track);
+
+      final item = MediaItem(
+        id: track.id,
+        title: track.title,
+        artist: track.category,
+        artUri: Uri.parse(track.imageUrl),
+        duration: track.duration,
+      );
+      mediaItem.add(item);
+
+      await _player.setUrl(track.url);
+      _player.play();
+      _saveLastTrack(track);
     } catch (e) {
       print("Error playing YouTube track: $e");
     } finally {
@@ -230,12 +361,25 @@ class FocusMusicService extends BaseAudioHandler
     }
   }
 
+  Stream<LoopMode> get loopModeStream => _player.loopModeStream;
+
   Future<void> togglePlayPause() async {
     if (_player.playing) {
       await pause();
     } else {
       await _player.play();
     }
+  }
+
+  Future<void> cycleLoopMode() async {
+    final current = _player.loopMode;
+    final next =
+        {
+          LoopMode.off: LoopMode.one,
+          LoopMode.one: LoopMode.all,
+          LoopMode.all: LoopMode.off,
+        }[current]!;
+    await _player.setLoopMode(next);
   }
 
   Future<void> _saveLastTrack(FocusTrack track) async {
