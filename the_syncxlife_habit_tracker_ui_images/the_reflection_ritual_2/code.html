@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Voice Sync Summary Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: "#00E074", 
+                        "background-dark": "#050B08", 
+                        "card-dark": "#121413", 
+                        "surface-dark": "#080A09", 
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(0, 224, 116, 0.4)',
+                        'neon-sm': '0 0 8px rgba(0, 224, 116, 0.6)',
+                        'neon-glow': '0 0 30px rgba(0, 224, 116, 0.15)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes wave {
+            0%, 100% { height: 10px; }
+            50% { height: 24px; }
+        }
+        .waveform-bar {
+            animation: wave 1.2s infinite ease-in-out;
+            box-shadow: 0 0 8px rgba(0, 224, 116, 0.6);
+        }
+        .waveform-bar.paused {
+            animation-play-state: paused;
+            height: 8px;
+        }
+        .waveform-bar:nth-child(odd) { animation-duration: 0.8s; }
+        .waveform-bar:nth-child(2n) { animation-duration: 1.1s; }
+        .waveform-bar:nth-child(3n) { animation-duration: 1.3s; }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 224, 116, 0.4);
+        }
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-200 min-h-screen pb-32 transition-colors duration-300 font-sans">
+<header class="fixed top-0 w-full z-50 bg-background-dark/90 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 rounded-lg bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_back</span>
+</button>
+<span class="font-bold text-lg tracking-tight text-white">Summary</span>
+</div>
+<div class="flex gap-3">
+<button class="w-8 h-8 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">ios_share</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden border-2 border-slate-600">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW4Td3BA0FntqZ66QPMVogS0HNGQT283yxAqvigvRYdvCtkk6G35bU36hBTeqYAyoDo75O7OruIb3kRNe19gAti10KfN4KwYuS3H8WoDRmUeDSeAiZWNNjkDgtt9fKewQw8-VXjCel_tzt5ajdhG5qhSYSwhcR29LxBT-8r_n_3oRY3XvmYDdQmYKUO6TlYh_Om5VKyjs40owbBbS_MgT-0Cp9ixxEouGnBw5oajg2uyEI98_YFj-a8_Dr-58wLytErMbDPx42ya6D"/>
+</div>
+</div>
+</header>
+<main class="px-5 pt-24 max-w-lg mx-auto pb-10">
+<div class="mb-6">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider glow-text">
+<span class="material-symbols-outlined text-sm">mic</span>
+                    Voice Entry #42
+                </div>
+<div class="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-slate-400 font-medium">
+                    AI Processed
+                </div>
+</div>
+<h1 class="text-3xl font-extrabold text-white mb-1">Morning Clarity Sync</h1>
+<p class="text-slate-400 font-medium text-sm">Thursday, Oct 24 • 8:15 AM</p>
+</div>
+<div class="space-y-4">
+<div class="bg-card-dark p-6 rounded-3xl border border-white/5 shadow-neon-glow relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-50"></div>
+<div class="relative z-10 flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Original Audio</span>
+<span class="text-xs font-mono text-primary glow-text">04:20</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-14 h-14 bg-primary text-black rounded-full flex items-center justify-center shadow-neon hover:scale-105 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl fill-1">play_arrow</span>
+</button>
+<div class="flex-1 h-12 bg-surface-dark/50 rounded-xl border border-white/5 flex items-center justify-center gap-1 px-4 overflow-hidden mask-linear-fade">
+<div class="w-1 bg-primary/40 rounded-full h-3"></div>
+<div class="w-1 bg-primary/60 rounded-full h-5"></div>
+<div class="w-1 bg-primary rounded-full h-8 waveform-bar"></div>
+<div class="w-1 bg-primary rounded-full h-4 waveform-bar"></div>
+<div class="w-1 bg-primary rounded-full h-6 waveform-bar"></div>
+<div class="w-1 bg-primary/80 rounded-full h-3 waveform-bar"></div>
+<div class="w-1 bg-primary/60 rounded-full h-5"></div>
+<div class="w-1 bg-primary/40 rounded-full h-2"></div>
+<div class="w-1 bg-primary/40 rounded-full h-3"></div>
+<div class="w-1 bg-primary/60 rounded-full h-6 waveform-bar"></div>
+<div class="w-1 bg-primary rounded-full h-4 waveform-bar"></div>
+<div class="w-1 bg-primary rounded-full h-7 waveform-bar"></div>
+<div class="w-1 bg-primary rounded-full h-3 waveform-bar"></div>
+<div class="w-1 bg-primary/60 rounded-full h-5"></div>
+<div class="w-1 bg-primary/40 rounded-full h-2"></div>
+<div class="w-1 bg-primary/30 rounded-full h-4"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-card-dark p-5 rounded-2xl border border-white/5 shadow-sm flex flex-col justify-between h-40 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="flex items-start justify-between relative z-10">
+<div class="w-8 h-8 rounded-lg bg-surface-dark border border-white/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg">sentiment_satisfied</span>
+</div>
+<span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Mood</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-bold text-white">88</span>
+<span class="text-sm text-primary font-bold">%</span>
+</div>
+<p class="text-xs text-slate-400 mt-1 font-medium">Mainly Optimistic</p>
+<div class="w-full h-1.5 bg-surface-dark rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-primary w-[88%] rounded-full shadow-neon-sm"></div>
+</div>
+</div>
+</div>
+<div class="bg-card-dark p-5 rounded-2xl border border-white/5 shadow-sm flex flex-col h-40">
+<div class="flex items-start justify-between mb-2">
+<div class="w-8 h-8 rounded-lg bg-surface-dark border border-white/10 flex items-center justify-center text-blue-400">
+<span class="material-symbols-outlined text-lg">bolt</span>
+</div>
+<span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Topics</span>
+</div>
+<div class="flex flex-wrap gap-2 content-start mt-1">
+<span class="px-2.5 py-1 rounded-md bg-surface-dark border border-white/10 text-[10px] font-medium text-slate-300">Productivity</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-dark border border-white/10 text-[10px] font-medium text-slate-300">Fitness</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-dark border border-white/10 text-[10px] font-medium text-slate-300">Q3 Goals</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-dark border border-white/10 text-[10px] font-medium text-slate-300">Health</span>
+</div>
+</div>
+</div>
+<div class="bg-card-dark p-6 rounded-2xl border border-white/5 shadow-sm">
+<div class="flex items-center gap-3 mb-5">
+<div class="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-500 flex items-center justify-center border border-yellow-500/20">
+<span class="material-symbols-outlined text-lg">lightbulb</span>
+</div>
+<h3 class="font-bold text-white text-sm uppercase tracking-wide">Key Takeaways</h3>
+</div>
+<ul class="space-y-4">
+<li class="flex gap-3 items-start">
+<span class="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon-sm flex-shrink-0"></span>
+<p class="text-sm text-slate-300 leading-relaxed">Focus on the "Deep Work" block in the morning to finish the presentation.</p>
+</li>
+<li class="flex gap-3 items-start">
+<span class="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon-sm flex-shrink-0"></span>
+<p class="text-sm text-slate-300 leading-relaxed">Schedule the dentist appointment for next Tuesday.</p>
+</li>
+<li class="flex gap-3 items-start">
+<span class="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon-sm flex-shrink-0"></span>
+<p class="text-sm text-slate-300 leading-relaxed">Feeling more energetic after the morning run; keep this routine.</p>
+</li>
+</ul>
+</div>
+<div class="bg-card-dark rounded-2xl border border-white/5 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+<h3 class="font-bold text-white text-sm uppercase tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500 text-lg">description</span>
+                        Full Transcript
+                    </h3>
+<button class="text-xs text-primary font-bold hover:underline">Copy</button>
+</div>
+<div class="p-6 relative">
+<div class="text-sm text-slate-400 leading-7 font-medium space-y-4">
+<p>
+<span class="text-slate-600 font-mono text-xs mr-2">00:00</span>
+                            Okay, so starting the day, I'm feeling pretty good. The run this morning was definitely harder than usual, but I pushed through it.
+                        </p>
+<p>
+<span class="text-slate-600 font-mono text-xs mr-2">00:15</span>
+                            I really need to make sure I get that Q3 presentation done by noon. If I can block out two hours of deep work, I should be fine. Also, don't forget to call the dentist...
+                        </p>
+<p>
+<span class="text-slate-600 font-mono text-xs mr-2">00:32</span>
+                            Regarding the project with Sarah, I think we're aligned, but I need to double-check the specs on the dashboard module.
+                        </p>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-card-dark to-transparent flex items-end justify-center pb-4">
+<button class="flex items-center gap-1 text-xs font-bold text-white bg-surface-dark/80 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10 hover:border-primary/50 transition-colors">
+                            Read Full Transcript
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-4">
+<button class="w-full bg-surface-dark border border-white/10 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-white/5 transition-all group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">add_task</span>
+                    Convert to Action Plan
+                </button>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-0 w-full z-50 bg-background-dark/95 backdrop-blur-lg border-t border-white/5 pb-6 pt-3 px-6 safe-area-bottom">
+<div class="flex justify-between items-center max-w-lg mx-auto">
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Hub</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="text-[10px] font-medium">Journal</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary relative">
+<div class="absolute -top-3 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 shadow-neon-sm">
+<span class="material-symbols-outlined text-2xl">spa</span>
+</div>
+<span class="text-[10px] font-bold mt-9">Ritual</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-[10px] font-medium">Stats</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</div>
+</nav>
+
+</body></html>

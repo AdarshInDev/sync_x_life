@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sync X Life Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: "#00E074", 
+                        secondary: "#2DD4BF", 
+                        "background-dark": "#050B08", 
+                        "card-dark": "#121413", 
+                        "surface-dark": "#1A1D1C", 
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(0, 224, 116, 0.4)',
+                        'neon-sm': '0 0 8px rgba(0, 224, 116, 0.6)',
+                        'neon-teal': '0 0 15px rgba(45, 212, 191, 0.4)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 224, 116, 0.4);
+        }
+        .glow-text-teal {
+            text-shadow: 0 0 10px rgba(45, 212, 191, 0.4);
+        }
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-200 min-h-screen pb-32 transition-colors duration-300">
+<header class="fixed top-0 w-full z-50 bg-background-dark/90 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-black font-bold shadow-neon-sm">
+<span class="material-symbols-outlined text-xl">all_inclusive</span>
+</div>
+<span class="font-bold text-lg tracking-tight text-white">Sync X Life</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border-2 border-slate-600">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW4Td3BA0FntqZ66QPMVogS0HNGQT283yxAqvigvRYdvCtkk6G35bU36hBTeqYAyoDo75O7OruIb3kRNe19gAti10KfN4KwYuS3H8WoDRmUeDSeAiZWNNjkDgtt9fKewQw8-VXjCel_tzt5ajdhG5qhSYSwhcR29LxBT-8r_n_3oRY3XvmYDdQmYKUO6TlYh_Om5VKyjs40owbBbS_MgT-0Cp9ixxEouGnBw5oajg2uyEI98_YFj-a8_Dr-58wLytErMbDPx42ya6D"/>
+</div>
+</header>
+<main class="px-5 pt-24 max-w-lg mx-auto pb-10">
+<div class="mb-6 flex justify-between items-end">
+<div>
+<div class="flex items-center gap-2 text-secondary text-xs font-bold uppercase tracking-wider mb-1 glow-text-teal">
+<span class="material-symbols-outlined text-sm">tune</span>
+                    Preferences
+                </div>
+<h1 class="text-2xl font-extrabold text-white">Settings</h1>
+</div>
+</div>
+<div class="bg-card-dark p-6 rounded-3xl border border-white/5 shadow-sm mb-6 flex items-center gap-5 relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
+<div class="relative z-10">
+<div class="w-20 h-20 rounded-full p-1 bg-gradient-to-br from-primary/50 to-secondary/50 shadow-neon-sm">
+<img alt="Large Avatar" class="w-full h-full rounded-full object-cover border-4 border-card-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW4Td3BA0FntqZ66QPMVogS0HNGQT283yxAqvigvRYdvCtkk6G35bU36hBTeqYAyoDo75O7OruIb3kRNe19gAti10KfN4KwYuS3H8WoDRmUeDSeAiZWNNjkDgtt9fKewQw8-VXjCel_tzt5ajdhG5qhSYSwhcR29LxBT-8r_n_3oRY3XvmYDdQmYKUO6TlYh_Om5VKyjs40owbBbS_MgT-0Cp9ixxEouGnBw5oajg2uyEI98_YFj-a8_Dr-58wLytErMbDPx42ya6D"/>
+</div>
+<button class="absolute -bottom-1 -right-1 w-7 h-7 bg-card-dark border border-white/10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-primary text-[14px]">edit</span>
+</button>
+</div>
+<div class="z-10">
+<h2 class="text-xl font-bold text-white">Alex Rivera</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-orange-500 text-lg fill-1">local_fire_department</span>
+<span class="text-sm text-slate-300 font-medium">12 Day Streak</span>
+</div>
+<div class="mt-2 text-xs text-slate-500 font-medium">Sync Member since 2023</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-card-dark p-5 rounded-3xl border border-white/5 shadow-sm flex flex-col justify-between h-40 hover:border-primary/30 transition-colors cursor-pointer group hover:shadow-neon-sm/20">
+<div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors border border-white/5">
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">shield_person</span>
+</div>
+<div>
+<h3 class="font-bold text-white mb-1 group-hover:text-primary transition-colors">Account &amp; Security</h3>
+<p class="text-[10px] text-slate-500 leading-tight">Password, Email, 2FA</p>
+</div>
+</div>
+<div class="bg-card-dark p-5 rounded-3xl border border-white/5 shadow-sm flex flex-col justify-between h-40 hover:border-primary/30 transition-colors cursor-pointer relative overflow-hidden group hover:shadow-neon-sm/20">
+<div class="absolute -right-8 -top-8 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all"></div>
+<div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 z-10 relative">
+<span class="material-symbols-outlined text-slate-300">palette</span>
+</div>
+<div class="z-10 relative">
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-bold text-white group-hover:text-primary transition-colors">App Theme</h3>
+<div class="w-3 h-3 rounded-full bg-primary shadow-neon-sm border border-white/20"></div>
+</div>
+<p class="text-[10px] text-slate-500">Neon Green (Active)</p>
+</div>
+</div>
+<div class="col-span-2 bg-card-dark p-6 rounded-3xl border border-white/5 shadow-sm relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20 shadow-neon-teal">
+<span class="material-symbols-outlined">graphic_eq</span>
+</div>
+<div>
+<h3 class="font-bold text-white text-lg">Sync Preferences</h3>
+<p class="text-xs text-slate-400 mt-0.5">Customize your experience</p>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-dark border border-white/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">mic</span>
+<span class="text-sm font-medium text-slate-200">Voice-to-Sync</span>
+</div>
+<div class="w-11 h-6 bg-primary rounded-full relative cursor-pointer shadow-neon-sm transition-all hover:opacity-90">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-dark border border-white/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">notifications_active</span>
+<span class="text-sm font-medium text-slate-200">Daily Digest</span>
+</div>
+<div class="w-11 h-6 bg-surface-dark border border-white/20 rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-slate-500 rounded-full shadow-sm"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-card-dark p-5 rounded-3xl border border-white/5 shadow-sm flex flex-col justify-between h-36 hover:border-secondary/30 transition-colors cursor-pointer group hover:shadow-neon-teal/20">
+<div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-secondary/10 transition-colors border border-white/5">
+<span class="material-symbols-outlined text-slate-300 group-hover:text-secondary transition-colors">database</span>
+</div>
+<div>
+<h3 class="font-bold text-white mb-1 group-hover:text-secondary transition-colors">Data Management</h3>
+<p class="text-[10px] text-slate-500">Export or Clear Data</p>
+</div>
+</div>
+<div class="bg-card-dark p-5 rounded-3xl border border-white/5 shadow-sm flex flex-col justify-between h-36 hover:border-red-500/30 transition-colors cursor-pointer group hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+<div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-red-500/10 transition-colors border border-white/5">
+<span class="material-symbols-outlined text-slate-300 group-hover:text-red-400 transition-colors">logout</span>
+</div>
+<div>
+<h3 class="font-bold text-white mb-1 group-hover:text-red-400 transition-colors">Log Out</h3>
+<p class="text-[10px] text-slate-500">Sign out of account</p>
+</div>
+</div>
+</div>
+<div class="mt-8 text-center">
+<p class="text-[10px] text-slate-600 font-medium">Sync X Life v2.4.0 (Build 3902)</p>
+</div>
+</main>
+<nav class="fixed bottom-0 w-full z-50 bg-background-dark/95 backdrop-blur-lg border-t border-white/5 pb-6 pt-3 px-6 safe-area-bottom">
+<div class="flex justify-between items-center max-w-lg mx-auto">
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="text-[10px] font-medium">Hub</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">edit_note</span>
+<span class="text-[10px] font-medium">Journal</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors group relative">
+<div class="w-10 h-10 -mt-5 rounded-full bg-card-dark border border-white/10 flex items-center justify-center shadow-lg group-hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-xl">spa</span>
+</div>
+<span class="text-[10px] font-medium mt-1">Ritual</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">bar_chart</span>
+<span class="text-[10px] font-medium">Stats</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary relative">
+<div class="absolute -top-1 w-8 h-1 bg-primary rounded-full shadow-neon-sm"></div>
+<span class="material-symbols-outlined mt-1">settings</span>
+<span class="text-[10px] font-bold glow-text">Settings</span>
+</button>
+</div>
+</nav>
+
+</body></html>

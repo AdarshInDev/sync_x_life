@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sync X Life - Focus Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#00FF94", // Neon Green
+                        "primary-dark": "#00CC76",
+                        "background-light": "#F3F4F6", 
+                        "background-dark": "#050505", // Deep charcoal/black
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#121212", // Surface dark for containers
+                        "card-dark": "#1A1A1A", // Slightly lighter for cards
+                        "text-subtle": "#9CA3AF", 
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        'xl': '1.25rem',
+                        '2xl': '1.5rem',
+                        '3xl': '2rem',
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    @keyframes wave {
+        0% { transform: translateY(0) rotate(0deg); }
+        100% { transform: translateY(-10px) rotate(360deg); }
+    }
+    .liquid-bg {
+        background: linear-gradient(180deg, rgba(0, 255, 148, 0.1) 0%, rgba(0, 255, 148, 0.4) 100%);
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+    }
+    .liquid-fill {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 45%;
+        background: #00FF94;opacity: 0.85;
+        transition: height 0.5s ease;
+        box-shadow: 0 0 25px rgba(0, 255, 148, 0.4);
+    }
+    .liquid-fill::before {
+        content: "";
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        top: -50%;
+        left: -50%;
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 40%;
+        animation: wave 8s infinite linear;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-gray-100 font-sans antialiased h-screen overflow-hidden flex selection:bg-primary selection:text-black">
+<nav class="hidden md:flex flex-col w-64 h-full border-r border-gray-800 bg-surface-dark p-6 flex-shrink-0">
+<div class="flex items-center space-x-3 mb-10">
+<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold shadow-lg shadow-primary/20">
+<span class="material-icons-round text-lg">all_inclusive</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-white">Sync X Life</span>
+</div>
+<div class="space-y-2 flex-1">
+<a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-round">monitor_heart</span>
+<span class="font-medium">Pulse</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-primary/10 text-primary font-medium border border-primary/10" href="#">
+<span class="material-icons-round">timer</span>
+<span>Focus Mode</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-round">auto_awesome</span>
+<span class="font-medium">Reflection</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-round">bar_chart</span>
+<span class="font-medium">Analytics</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-round">folder</span>
+<span class="font-medium">Projects</span>
+</a>
+</div>
+<div class="mt-auto pt-6 border-t border-gray-800">
+<div class="flex items-center space-x-3 px-4 py-3 mt-2">
+<div class="w-8 h-8 rounded-full bg-gray-700"></div>
+<div>
+<div class="text-sm font-semibold text-gray-200">Alex Chen</div>
+<div class="text-xs text-gray-500">Pro Member</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="flex-1 h-full overflow-y-auto hide-scrollbar relative bg-background-dark">
+<div class="md:hidden flex items-center justify-between p-6 pb-2">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black shadow-lg shadow-primary/20">
+<span class="material-icons-round text-sm">all_inclusive</span>
+</div>
+<span class="font-bold text-lg text-white">Sync X Life</span>
+</div>
+<button class="text-gray-400 hover:text-white transition-colors">
+<span class="material-icons-round">menu</span>
+</button>
+</div>
+<div class="p-6 md:p-10 max-w-5xl mx-auto space-y-8 pb-32 md:pb-10">
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<div class="flex items-center space-x-2 text-primary text-sm font-bold tracking-wide uppercase mb-1">
+<span class="material-icons-round text-base">bolt</span>
+<span>Deep Work Session</span>
+</div>
+<h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white">The Focus Mode</h1>
+<div class="mt-2 text-gray-400 flex items-center space-x-2">
+<span>Thursday, Oct 24</span>
+<span class="w-1 h-1 rounded-full bg-gray-700"></span>
+<span>09:30 AM</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 w-full md:w-auto">
+<div class="flex justify-between w-full md:w-64 text-sm font-medium mb-1">
+<span class="text-gray-300">Daily Flow State</span>
+<span class="text-primary font-bold">2h 15m</span>
+</div>
+<div class="w-full md:w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(0,255,148,0.5)]" style="width: 45%"></div>
+</div>
+<span class="text-xs text-gray-500 text-right w-full">Target: 5h deep work</span>
+</div>
+</header>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="col-span-1 md:col-span-8 row-span-2 bg-surface-dark rounded-3xl p-8 relative overflow-hidden shadow-lg border border-gray-800 flex flex-col items-center justify-center min-h-[400px]">
+<div class="absolute top-0 right-0 p-6">
+<div class="flex items-center space-x-2 px-3 py-1 rounded-full bg-black/40 text-xs font-bold text-gray-400 border border-white/5 backdrop-blur-sm">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+<span>LIVE SESSION</span>
+</div>
+</div>
+<div class="relative w-64 h-64 md:w-72 md:h-72 mb-8 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-4 border-gray-800"></div>
+<div class="w-full h-full rounded-full overflow-hidden relative bg-black shadow-inner">
+<div class="liquid-fill"></div>
+</div>
+<div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+<span class="text-6xl md:text-7xl font-bold font-mono tracking-tighter text-white drop-shadow-2xl">25:00</span>
+<span class="text-sm font-bold text-gray-500 mt-2 uppercase tracking-widest">Pomodoro 1/4</span>
+</div>
+</div>
+<div class="flex items-center space-x-6 z-10">
+<button class="p-4 rounded-full bg-card-dark text-gray-400 hover:text-white hover:bg-gray-700 transition-colors border border-gray-800">
+<span class="material-icons-round text-xl">restart_alt</span>
+</button>
+<button class="w-20 h-20 rounded-full bg-primary text-black shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-icons-round text-4xl">play_arrow</span>
+</button>
+<button class="p-4 rounded-full bg-card-dark text-gray-400 hover:text-white hover:bg-gray-700 transition-colors border border-gray-800">
+<span class="material-icons-round text-xl">stop</span>
+</button>
+</div>
+<p class="mt-8 text-gray-500 text-sm font-medium">Stay focused. Break in 25 minutes.</p>
+</div>
+<div class="col-span-1 md:col-span-4 bg-surface-dark rounded-3xl p-6 shadow-lg border border-gray-800 flex flex-col justify-between h-full min-h-[220px]">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Current Focus</h3>
+<button class="text-gray-500 hover:text-primary transition-colors">
+<span class="material-icons-round text-lg">edit</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<div class="text-xl font-semibold leading-tight text-white mb-3">
+                        Finalize Q4 Marketing Strategy Deck
+                    </div>
+<div class="flex items-center space-x-2 mt-2">
+<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-red-900/20 text-red-400 border border-red-900/30">High Priority</span>
+<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide bg-blue-900/20 text-blue-400 border border-blue-900/30">#Strategy</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-gray-800">
+<div class="flex items-center justify-between text-sm mb-2">
+<span class="text-gray-400">Subtasks</span>
+<span class="text-white font-medium">2/5</span>
+</div>
+<div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-2/5 shadow-[0_0_8px_rgba(0,255,148,0.4)]"></div>
+</div>
+</div>
+</div>
+<div class="col-span-1 md:col-span-4 bg-surface-dark rounded-3xl p-6 shadow-lg border border-gray-800 flex flex-col h-full min-h-[220px]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Up Next</h3>
+<span class="text-[10px] font-bold bg-gray-800 px-2 py-1 rounded text-gray-400">3 Tasks</span>
+</div>
+<div class="space-y-3 flex-1 overflow-y-auto pr-1 custom-scroll">
+<div class="group flex items-center p-3 rounded-xl bg-card-dark border border-transparent hover:border-primary/20 transition-all cursor-pointer">
+<div class="w-5 h-5 rounded-md border-2 border-gray-600 flex items-center justify-center mr-3 group-hover:border-primary transition-colors"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium text-gray-200 truncate group-hover:text-white">Review Design System</p>
+<p class="text-xs text-gray-500">30m est.</p>
+</div>
+<span class="material-icons-round text-gray-600 group-hover:text-primary text-sm transition-colors">drag_indicator</span>
+</div>
+<div class="group flex items-center p-3 rounded-xl bg-card-dark border border-transparent hover:border-primary/20 transition-all cursor-pointer">
+<div class="w-5 h-5 rounded-md border-2 border-gray-600 flex items-center justify-center mr-3 group-hover:border-primary transition-colors"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium text-gray-200 truncate group-hover:text-white">Email Newsletter Draft</p>
+<p class="text-xs text-gray-500">45m est.</p>
+</div>
+<span class="material-icons-round text-gray-600 group-hover:text-primary text-sm transition-colors">drag_indicator</span>
+</div>
+</div>
+</div>
+<div class="col-span-1 md:col-span-12 bg-gradient-to-r from-surface-dark to-black rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between border border-gray-800 shadow-lg">
+<div class="flex items-center gap-6 mb-6 md:mb-0 w-full md:w-auto">
+<div class="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+<span class="material-icons-round text-white/80">headphones</span>
+</div>
+<div>
+<h4 class="text-white font-medium">Ambient Focus Sound</h4>
+<p class="text-white/40 text-sm">Playing: Binaural Beats (40Hz)</p>
+</div>
+</div>
+<div class="flex items-center gap-1 h-8 mx-6">
+<div class="w-1 bg-primary rounded-full h-3 animate-pulse"></div>
+<div class="w-1 bg-primary rounded-full h-5 animate-pulse delay-75"></div>
+<div class="w-1 bg-primary rounded-full h-8 animate-pulse delay-100"></div>
+<div class="w-1 bg-primary rounded-full h-4 animate-pulse delay-150"></div>
+<div class="w-1 bg-primary rounded-full h-6 animate-pulse delay-200"></div>
+<div class="w-1 bg-primary rounded-full h-3 animate-pulse delay-300"></div>
+<div class="w-1 bg-primary rounded-full h-5 animate-pulse delay-75"></div>
+<div class="w-1 bg-primary rounded-full h-8 animate-pulse delay-100"></div>
+<div class="w-1 bg-primary rounded-full h-2 animate-pulse delay-150"></div>
+<div class="w-1 bg-primary rounded-full h-6 animate-pulse delay-200"></div>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto justify-end">
+<button class="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors">
+<span class="material-icons-round">skip_previous</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-primary transition-colors hover:shadow-[0_0_15px_rgba(0,255,148,0.5)]">
+<span class="material-icons-round text-xl">pause</span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors">
+<span class="material-icons-round">skip_next</span>
+</button>
+<div class="w-px h-8 bg-white/10 mx-2"></div>
+<button class="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors">
+<span class="material-icons-round">volume_up</span>
+</button>
+</div>
+</div>
+</div>
+<button class="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-primary text-black rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-50 hover:scale-105 active:scale-95 transition-transform">
+<span class="material-icons-round text-2xl">check</span>
+</button>
+</div>
+</main>
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-[#050505]/95 backdrop-blur-xl border-t border-gray-800 flex justify-around items-center p-4 z-40 pb-6">
+<a class="flex flex-col items-center group" href="#">
+<span class="material-icons-round text-gray-500 group-hover:text-primary transition-colors text-2xl">monitor_heart</span>
+<span class="text-[10px] mt-1 text-gray-500 group-hover:text-primary transition-colors">Pulse</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<span class="material-icons-round text-primary text-2xl drop-shadow-[0_0_5px_rgba(0,255,148,0.5)]">timer</span>
+<span class="text-[10px] mt-1 font-medium text-primary">Focus</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<span class="material-icons-round text-gray-500 group-hover:text-primary transition-colors text-2xl">auto_awesome</span>
+<span class="text-[10px] mt-1 text-gray-500 group-hover:text-primary transition-colors">Reflection</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<span class="material-icons-round text-gray-500 group-hover:text-primary transition-colors text-2xl">bar_chart</span>
+<span class="text-[10px] mt-1 text-gray-500 group-hover:text-primary transition-colors">Analytics</span>
+</a>
+</div>
+
+</body></html>
