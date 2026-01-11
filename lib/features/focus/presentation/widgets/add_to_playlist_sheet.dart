@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/theme_service.dart';
 import '../../data/models/playlist_model.dart';
 import '../../data/repositories/playlist_repository.dart';
 
@@ -44,12 +45,13 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
   }
 
   Future<void> _createPlaylist(BuildContext context) async {
+    final colors = Provider.of<ThemeService>(context, listen: false).colors;
     final controller = TextEditingController();
     final name = await showDialog<String>(
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: AppColors.surfaceDark,
+            backgroundColor: colors.surface,
             title: const Text(
               'New Playlist',
               style: TextStyle(color: Colors.white),
@@ -57,11 +59,11 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
             content: TextField(
               controller: controller,
               style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Playlist Name',
-                hintStyle: TextStyle(color: AppColors.textSubtle),
+                hintStyle: TextStyle(color: colors.textSubtle),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primary),
+                  borderSide: BorderSide(color: colors.primary),
                 ),
               ),
             ),
@@ -73,7 +75,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                 ),
                 child: const Text(
                   'Create',
@@ -91,6 +93,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
   }
 
   Future<void> _addToPlaylist(Playlist playlist) async {
+    final colors = Provider.of<ThemeService>(context, listen: false).colors;
     try {
       await _repository.addSongToPlaylist(
         playlistId: playlist.id,
@@ -104,7 +107,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Added to ${playlist.name}'),
-            backgroundColor: AppColors.primary,
+            backgroundColor: colors.primary,
           ),
         );
       }
@@ -119,90 +122,87 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Add to Playlist',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  color: AppColors.primary,
-                ),
-                onPressed: () => _createPlaylist(context),
-              ),
-            ],
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const SizedBox(height: 16),
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          else if (_playlists.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "No playlists yet.",
-                    style: TextStyle(color: AppColors.textSubtle),
-                  ),
-                  TextButton(
-                    onPressed: () => _createPlaylist(context),
-                    child: const Text(
-                      "Create New Playlist",
-                      style: TextStyle(color: AppColors.primary),
+                    'Add to Playlist',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add_circle_outline, color: colors.primary),
+                    onPressed: () => _createPlaylist(context),
                   ),
                 ],
               ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: _playlists.length,
-              itemBuilder: (context, index) {
-                final playlist = _playlists[index];
-                return ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceHighlight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.queue_music,
-                      color: AppColors.primary,
-                    ),
+              const SizedBox(height: 16),
+              if (_isLoading)
+                Center(child: CircularProgressIndicator(color: colors.primary))
+              else if (_playlists.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    children: [
+                      Text(
+                        "No playlists yet.",
+                        style: TextStyle(color: colors.textSubtle),
+                      ),
+                      TextButton(
+                        onPressed: () => _createPlaylist(context),
+                        child: Text(
+                          "Create New Playlist",
+                          style: TextStyle(color: colors.primary),
+                        ),
+                      ),
+                    ],
                   ),
-                  title: Text(
-                    playlist.name,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: const Icon(Icons.add, color: AppColors.textSubtle),
-                  onTap: () => _addToPlaylist(playlist),
-                );
-              },
-            ),
-        ],
-      ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _playlists.length,
+                  itemBuilder: (context, index) {
+                    final playlist = _playlists[index];
+                    return ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: colors.surfaceHighlight,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.queue_music, color: colors.primary),
+                      ),
+                      title: Text(
+                        playlist.name,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: Icon(Icons.add, color: colors.textSubtle),
+                      onTap: () => _addToPlaylist(playlist),
+                    );
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

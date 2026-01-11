@@ -284,3 +284,103 @@ class Task {
     };
   }
 }
+
+// Ritual System Models
+class RitualConfig {
+  final int ritualsPerDay;
+  final Map<String, String> ritualTitles;
+
+  RitualConfig({required this.ritualsPerDay, required this.ritualTitles});
+
+  factory RitualConfig.fromJson(Map<String, dynamic> json) {
+    return RitualConfig(
+      ritualsPerDay: json['rituals_per_day'] ?? 1,
+      ritualTitles:
+          json['ritual_titles'] != null
+              ? Map<String, String>.from(json['ritual_titles'])
+              : getDefaultTitles(json['rituals_per_day'] ?? 1),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'rituals_per_day': ritualsPerDay, 'ritual_titles': ritualTitles};
+  }
+
+  static Map<String, String> getDefaultTitles(int count) {
+    switch (count) {
+      case 1:
+        return {'daily': 'Daily Ritual'};
+      case 2:
+        return {'morning': 'Morning Ritual', 'evening': 'Evening Ritual'};
+      case 3:
+        return {
+          'morning': 'Morning Ritual',
+          'afternoon': 'Afternoon Ritual',
+          'evening': 'Evening Ritual',
+        };
+      case 4:
+        return {
+          'morning': 'Morning Ritual',
+          'afternoon': 'Afternoon Ritual',
+          'evening': 'Evening Ritual',
+          'night': 'Night Ritual',
+        };
+      default:
+        return {'daily': 'Daily Ritual'};
+    }
+  }
+
+  List<String> getSlotKeys() {
+    return ritualTitles.keys.toList();
+  }
+}
+
+class RitualCompletion {
+  final String id;
+  final String userId;
+  final DateTime date;
+  final String ritualSlot;
+  final String status; // 'completed' or 'missed'
+  final DateTime? completedAt;
+  final DateTime createdAt;
+
+  RitualCompletion({
+    required this.id,
+    required this.userId,
+    required this.date,
+    required this.ritualSlot,
+    required this.status,
+    this.completedAt,
+    required this.createdAt,
+  });
+
+  factory RitualCompletion.fromJson(Map<String, dynamic> json) {
+    return RitualCompletion(
+      id: json['id'],
+      userId: json['user_id'],
+      date: DateTime.parse(json['date']),
+      ritualSlot: json['ritual_slot'],
+      status: json['status'],
+      completedAt:
+          json['completed_at'] != null
+              ? DateTime.parse(json['completed_at'])
+              : null,
+      createdAt: DateTime.parse(json['created_at']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'date': date.toIso8601String().split('T')[0],
+      'ritual_slot': ritualSlot,
+      'status': status,
+      'completed_at': completedAt?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
+
+  bool get isCompleted => status == 'completed';
+  bool get isMissed => status == 'missed';
+}

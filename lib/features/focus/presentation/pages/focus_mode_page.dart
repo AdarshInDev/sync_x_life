@@ -28,6 +28,7 @@ class _FocusModePageState extends State<FocusModePage> {
   Task? _currentTask;
   bool _isLoading = true;
   bool _isPomodoroMode = false; // Default to Focus (Task) Mode
+  bool _showMusicView = false; // Toggle between Timer and Music view
 
   // Timer state
   int _remainingSeconds = 25 * 60; // 25 minutes
@@ -135,75 +136,76 @@ class _FocusModePageState extends State<FocusModePage> {
             ],
           ),
           const SizedBox(height: 16),
-          // Custom Toggle
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _toggleMode(false),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color:
-                            !_isPomodoroMode
-                                ? AppColors.primary.withValues(alpha: 0.2)
-                                : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Focus Session",
-                          style: TextStyle(
-                            color:
-                                !_isPomodoroMode
-                                    ? AppColors.primary
-                                    : AppColors.textSubtle,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+          // Custom Toggle - Only show in Timer view
+          if (!_showMusicView)
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _toggleMode(false),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color:
+                              !_isPomodoroMode
+                                  ? AppColors.primary.withValues(alpha: 0.2)
+                                  : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Focus Session",
+                            style: TextStyle(
+                              color:
+                                  !_isPomodoroMode
+                                      ? AppColors.primary
+                                      : AppColors.textSubtle,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _toggleMode(true),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color:
-                            _isPomodoroMode
-                                ? AppColors.primary.withValues(alpha: 0.2)
-                                : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Pomodoro",
-                          style: TextStyle(
-                            color:
-                                _isPomodoroMode
-                                    ? AppColors.primary
-                                    : AppColors.textSubtle,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _toggleMode(true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color:
+                              _isPomodoroMode
+                                  ? AppColors.primary.withValues(alpha: 0.2)
+                                  : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Pomodoro",
+                            style: TextStyle(
+                              color:
+                                  _isPomodoroMode
+                                      ? AppColors.primary
+                                      : AppColors.textSubtle,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -350,29 +352,12 @@ class _FocusModePageState extends State<FocusModePage> {
                       children: [
                         _buildHeader(),
                         Expanded(
-                          child: RefreshIndicator(
-                            onRefresh: _loadTasks,
-                            color: colors.primary,
-                            backgroundColor: colors.surface,
-                            child: SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                children: [
-                                  _buildTimerSection(),
-                                  if (!_isPomodoroMode) ...[
-                                    const SizedBox(height: 24),
-                                    _buildCurrentFocusCard(),
-                                    const SizedBox(height: 24),
-                                    _buildUpNextList(),
-                                  ],
-                                  const SizedBox(height: 200),
-                                ],
-                              ),
-                            ),
-                          ),
+                          child:
+                              _showMusicView
+                                  ? _buildMusicView()
+                                  : _buildTimerView(),
                         ),
-                        _buildMusicPlayer(),
+                        _buildViewToggle(),
                         const SizedBox(height: 110), // Bottom Nav Bar padding
                       ],
                     ),
@@ -483,6 +468,243 @@ class _FocusModePageState extends State<FocusModePage> {
         const SizedBox(height: 8),
         const FocusPlayerWidget(),
       ],
+    );
+  }
+
+  // Timer View - Original focus UI without music
+  Widget _buildTimerView() {
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+        return RefreshIndicator(
+          onRefresh: _loadTasks,
+          color: colors.primary,
+          backgroundColor: colors.surface,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                _buildTimerSection(),
+                if (!_isPomodoroMode) ...[
+                  const SizedBox(height: 24),
+                  _buildCurrentFocusCard(),
+                  const SizedBox(height: 24),
+                  _buildUpNextList(),
+                ],
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Music View - All music controls
+  Widget _buildMusicView() {
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const OnlineMusicPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: colors.primary.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.cloud_queue,
+                              color: colors.primary,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Online Search',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UserPlaylistsPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: colors.primary.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.queue_music,
+                              color: colors.primary,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'My Playlists',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const FocusPlayerWidget(),
+              const SizedBox(height: 100),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Toggle Switch
+  Widget _buildViewToggle() {
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _showMusicView = false),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color:
+                          !_showMusicView ? colors.primary : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          color:
+                              !_showMusicView
+                                  ? Colors.black
+                                  : colors.textSubtle,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Timer',
+                          style: TextStyle(
+                            color:
+                                !_showMusicView
+                                    ? Colors.black
+                                    : colors.textSubtle,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _showMusicView = true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color:
+                          _showMusicView ? colors.primary : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.music_note,
+                          color:
+                              _showMusicView ? Colors.black : colors.textSubtle,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Music',
+                          style: TextStyle(
+                            color:
+                                _showMusicView
+                                    ? Colors.black
+                                    : colors.textSubtle,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

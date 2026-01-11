@@ -482,4 +482,193 @@ class SupabaseService {
           .eq('id', items[i].id);
     }
   }
+
+  // --- Ritual System ---
+
+  /// Get user's ritual configuration
+  Future<RitualConfig> getRitualConfig() async {
+    final user = currentUser;
+    if (user == null) {
+      return RitualConfig(
+        ritualsPerDay: 1,
+        ritualTitles: RitualConfig.getDefaultTitles(1),
+      );
+    }
+
+    final data =
+        await client
+            .from('profiles')
+            .select('rituals_per_day, ritual_titles')
+            .eq('id', user.id)
+            .single();
+
+    return RitualConfig.fromJson(data);
+  }
+
+  /// Update user's ritual configuration
+  Future<void> updateRitualConfig(int count, Map<String, String> titles) async {
+    final user = currentUser;
+    if (user == null) return;
+
+    await client
+        .from('profiles')
+        .update({'rituals_per_day': count, 'ritual_titles': titles})
+        .eq('id', user.id);
+  }
+
+  /// Get current ritual slot based on time and user's ritual count
+  String getCurrentRitualSlot(int ritualsPerDay) {
+    final now = DateTime.now();
+    final hour = now.hour;
+
+    switch (ritualsPerDay) {
+      case 1:
+        return 'daily';
+      case 2:
+        return hour < 12 ? 'morning' : 'evening';
+      case 3:
+        if (hour < 8) return 'morning';
+        if (hour < 16) return 'afternoon';
+        return 'evening';
+      case 4:
+        if (hour < 6) return 'morning';
+        if (hour < 12) return 'afternoon';
+        if (hour < 18) return 'evening';
+        return 'night';
+      default:
+        return 'daily';
+    }
+  }
+
+  /// Check if a ritual slot is still available (not expired)
+  bool isRitualSlotAvailable(String slot, int ritualsPerDay) {
+    final now = DateTime.now();
+    final hour = now.hour;
+
+    switch (ritualsPerDay) {
+      case 1:
+        return true; // Daily ritual available all day
+      case 2:
+        if (slot == 'morning') return hour < 12;
+        if (slot == 'evening') return hour >= 12;
+        return false;
+      case 3:
+        if (slot == 'morning') return hour < 8;
+        if (slot == 'afternoon') return hour >= 8 && hour < 16;
+        if (slot == 'evening') return hour >= 16;
+        return false;
+      case 4:
+        if (slot == 'morning') return hour < 6;
+        if (slot == 'afternoon') return hour >= 6 && hour < 12;
+        if (slot == 'evening') return hour >= 12 && hour < 18;
+        if (slot == 'night') return hour >= 18;
+        return false;
+      default:
+        return true;
+    }
+  }
+
+  /// Complete a ritual
+  Future<void> completeRitual(String slot, {DateTime? date}) async {
+    final user = currentUser;
+    if (user == null) return;
+
+    final targetDate = date ?? DateTime.now();
+    final dateStr = targetDate.toIso8601String().split('T')[0];
+
+    await client.from('ritual_completions').upsert({
+      'user_id': user.id,
+      'date': dateStr,
+      'ritual_slot': slot,
+      'status': 'completed',
+      'completed_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'user_id,date,ritual_slot');
+  }
+
+  /// Mark a ritual as missed
+  Future<void> markRitualMissed(String slot, {DateTime? date}) async {
+    final user = currentUser;
+    if (user == null) return;
+
+    final targetDate = date ?? DateTime.now();
+    final dateStr = targetDate.toIso8601String().split('T')[0];
+
+    // Check if already completed
+    final existing =
+        await client
+            .from('ritual_completions')
+            .select()
+            .eq('user_id', user.id)
+            .eq('date', dateStr)
+            .eq('ritual_slot', slot)
+            .maybeSingle();
+
+    if (existing == null) {
+      await client.from('ritual_completions').insert({
+        'user_id': user.id,
+        'date': dateStr,
+        'ritual_slot': slot,
+        'status': 'missed',
+      });
+    }
+  }
+
+  /// Get ritual completions for a specific date
+  Future<List<RitualCompletion>> getRitualCompletions({DateTime? date}) async {
+    final user = currentUser;
+    if (user == null) return [];
+
+    final targetDate = date ?? DateTime.now();
+    final dateStr = targetDate.toIso8601String().split('T')[0];
+
+    final data = await client
+        .from('ritual_completions')
+        .select()
+        .eq('user_id', user.id)
+        .eq('date', dateStr);
+
+    return (data as List).map((e) => RitualCompletion.fromJson(e)).toList();
+  }
+
+  /// Check and mark missed rituals for today
+  Future<void> checkAndMarkMissedRituals() async {
+    final config = await getRitualConfig();
+    final completions = await getRitualCompletions();
+    final completedSlots = completions.map((c) => c.ritualSlot).toSet();
+
+    final allSlots = config.getSlotKeys();
+    for (final slot in allSlots) {
+      if (!completedSlots.contains(slot) &&
+          !isRitualSlotAvailable(slot, config.ritualsPerDay)) {
+        await markRitualMissed(slot);
+      }
+    }
+  }
+
+  /// Get ritual stats for a date range
+  Future<Map<String, int>> getRitualStats({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final user = currentUser;
+    if (user == null) return {'completed': 0, 'missed': 0};
+
+    final startStr = startDate.toIso8601String().split('T')[0];
+    final endStr = endDate.toIso8601String().split('T')[0];
+
+    final data = await client
+        .from('ritual_completions')
+        .select()
+        .eq('user_id', user.id)
+        .gte('date', startStr)
+        .lte('date', endStr);
+
+    final completions =
+        (data as List).map((e) => RitualCompletion.fromJson(e)).toList();
+
+    return {
+      'completed': completions.where((c) => c.isCompleted).length,
+      'missed': completions.where((c) => c.isMissed).length,
+    };
+  }
 }

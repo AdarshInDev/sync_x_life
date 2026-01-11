@@ -20,9 +20,15 @@ class _ReflectionPageState extends State<ReflectionPage> {
   final _highlightController = TextEditingController();
   final _blockerController = TextEditingController();
   final _improvementController = TextEditingController();
+  final _ritualTitleController = TextEditingController();
   double _moodScore = 7.0;
   double _productivityScore = 75.0;
   bool _isSaving = false;
+
+  // Ritual system
+  RitualConfig? _ritualConfig;
+  String _currentRitualSlot = 'daily';
+  String _currentRitualTitle = 'Daily Ritual';
 
   // Audio recording data
   String? _recordedAudioPath;
@@ -33,7 +39,30 @@ class _ReflectionPageState extends State<ReflectionPage> {
     _highlightController.dispose();
     _blockerController.dispose();
     _improvementController.dispose();
+    _ritualTitleController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRitualConfig();
+  }
+
+  Future<void> _loadRitualConfig() async {
+    try {
+      final config = await _supabaseService.getRitualConfig();
+      final slot = _supabaseService.getCurrentRitualSlot(config.ritualsPerDay);
+
+      setState(() {
+        _ritualConfig = config;
+        _currentRitualSlot = slot;
+        _currentRitualTitle = config.ritualTitles[slot] ?? 'Daily Ritual';
+        _ritualTitleController.text = _currentRitualTitle;
+      });
+    } catch (e) {
+      // Use defaults
+    }
   }
 
   Future<void> _saveReflection() async {
@@ -60,7 +89,10 @@ class _ReflectionPageState extends State<ReflectionPage> {
         date: DateTime.now(),
         moodScore: _moodScore.round(),
         productivityScore: _productivityScore.round(),
-        title: 'Evening Reflection',
+        title:
+            _ritualTitleController.text.isNotEmpty
+                ? _ritualTitleController.text
+                : _currentRitualTitle,
         highlight: _highlightController.text,
         blocker: _blockerController.text,
         improvement: _improvementController.text,
@@ -69,6 +101,9 @@ class _ReflectionPageState extends State<ReflectionPage> {
       );
 
       await _supabaseService.saveReflection(reflection);
+
+      // Complete the ritual
+      await _supabaseService.completeRitual(_currentRitualSlot);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,6 +155,37 @@ class _ReflectionPageState extends State<ReflectionPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildHeader(), // Note: Header internals still use AppColors, might need deeper update
+                  const SizedBox(height: 16),
+
+                  // Editable Ritual Title
+                  TextField(
+                    controller: _ritualTitleController,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Ritual Title (Optional)',
+                      labelStyle: TextStyle(color: colors.textSubtle),
+                      filled: true,
+                      fillColor: colors.surface.withValues(alpha: 0.3),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colors.primary),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 32),
                   _buildProgressSection(),
                   const SizedBox(height: 32),
@@ -247,9 +313,9 @@ class _ReflectionPageState extends State<ReflectionPage> {
           ],
         ),
         const SizedBox(height: 8),
-        const Text(
-          "The Reflection Ritual",
-          style: TextStyle(
+        Text(
+          _currentRitualTitle,
+          style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -257,12 +323,47 @@ class _ReflectionPageState extends State<ReflectionPage> {
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
-          "Thursday, Oct 24 • 8:00 PM",
-          style: TextStyle(color: AppColors.textSubtle, fontSize: 14),
+        Text(
+          _getFormattedDateTime(),
+          style: const TextStyle(color: AppColors.textSubtle, fontSize: 14),
         ),
       ],
     );
+  }
+
+  String _getFormattedDateTime() {
+    final now = DateTime.now();
+    final days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    final dayName = days[now.weekday - 1];
+    final monthName = months[now.month - 1];
+    final hour =
+        now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
+    final period = now.hour >= 12 ? 'PM' : 'AM';
+
+    return '$dayName, $monthName ${now.day} • $hour:${now.minute.toString().padLeft(2, '0')} $period';
   }
 
   Widget _buildProgressSection() {

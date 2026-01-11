@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../core/services/theme_service.dart';
 import '../../data/models/focus_track.dart';
 import '../../data/models/playlist_model.dart';
 import '../../data/repositories/playlist_repository.dart';
@@ -57,48 +59,53 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B1410),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          widget.playlist.name,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+        return Scaffold(
+          backgroundColor: const Color(0xFF0B1410),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            title: Text(
+              widget.playlist.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child:
-                _isLoading
-                    ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                    : _items.isEmpty
-                    ? const Center(
-                      child: Text(
-                        "No songs in this playlist.",
-                        style: TextStyle(color: AppColors.textSubtle),
-                      ),
-                    )
-                    : _buildSongList(),
+          body: Column(
+            children: [
+              Expanded(
+                child:
+                    _isLoading
+                        ? Center(
+                          child: CircularProgressIndicator(
+                            color: colors.primary,
+                          ),
+                        )
+                        : _items.isEmpty
+                        ? Center(
+                          child: Text(
+                            "No songs in this playlist.",
+                            style: TextStyle(color: colors.textSubtle),
+                          ),
+                        )
+                        : _buildSongList(colors),
+              ),
+              const BottomPlayerWrapper(),
+            ],
           ),
-          const BottomPlayerWrapper(),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildSongList() {
+  Widget _buildSongList(dynamic colors) {
     return StreamBuilder<FocusTrack?>(
       stream: _musicService.currentTrackStream,
       initialData: _musicService.currentTrack,
@@ -139,9 +146,7 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color:
-                        isSelected
-                            ? const Color(0xFF1F352A)
-                            : const Color(0xFF12211A),
+                        isSelected ? const Color(0xFF1F352A) : colors.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color:
@@ -170,10 +175,10 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
                                   : Container(
                                     width: 48,
                                     height: 48,
-                                    color: AppColors.surfaceHighlight,
-                                    child: const Icon(
+                                    color: colors.surfaceHighlight,
+                                    child: Icon(
                                       Icons.music_note,
-                                      color: AppColors.primary,
+                                      color: colors.primary,
                                     ),
                                   ),
                         ),
@@ -192,10 +197,7 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
                       item.author,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSubtle,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: colors.textSubtle, fontSize: 12),
                     ),
                     trailing: _buildPlayButton(
                       isPlaying: isTrackPlaying,
@@ -264,17 +266,22 @@ class BottomPlayerWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1410),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: const FocusPlayerWidget(showPlaylistOnTap: false),
-      ),
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+        return Container(
+          decoration: BoxDecoration(
+            color: colors.background,
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: const FocusPlayerWidget(showPlaylistOnTap: false),
+          ),
+        );
+      },
     );
   }
 }

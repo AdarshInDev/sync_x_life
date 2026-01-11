@@ -19,10 +19,24 @@ class _SettingsPageState extends State<SettingsPage> {
   UserProfile? _profile;
   bool _isLoading = true;
 
+  // Ritual configuration
+  int _ritualsPerDay = 1;
+  Map<String, String> _ritualTitles = {};
+  final Map<String, TextEditingController> _titleControllers = {};
+
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadRitualConfig();
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _titleControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _loadProfile() async {
@@ -39,6 +53,221 @@ class _SettingsPageState extends State<SettingsPage> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _loadRitualConfig() async {
+    try {
+      final config = await _supabaseService.getRitualConfig();
+      if (mounted) {
+        setState(() {
+          _ritualsPerDay = config.ritualsPerDay;
+          _ritualTitles = Map.from(config.ritualTitles);
+          _initializeTitleControllers();
+        });
+      }
+    } catch (e) {
+      // Use defaults if error
+    }
+  }
+
+  void _initializeTitleControllers() {
+    _titleControllers.clear();
+    for (var entry in _ritualTitles.entries) {
+      _titleControllers[entry.key] = TextEditingController(text: entry.value);
+    }
+  }
+
+  Future<void> _saveRitualConfig() async {
+    try {
+      // Update titles from controllers
+      for (var entry in _titleControllers.entries) {
+        _ritualTitles[entry.key] = entry.value.text;
+      }
+
+      await _supabaseService.updateRitualConfig(_ritualsPerDay, _ritualTitles);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ritual configuration saved!'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildRitualConfigCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.calendar_today,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Daily Rituals",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      "Configure your reflection schedule",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Rituals per day selector
+          Row(
+            children: [
+              const Text(
+                "Rituals per day:",
+                style: TextStyle(color: AppColors.textSubtle, fontSize: 14),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: DropdownButton<int>(
+                  value: _ritualsPerDay,
+                  underline: const SizedBox(),
+                  dropdownColor: AppColors.surfaceDark,
+                  style: const TextStyle(color: Colors.white),
+                  items:
+                      [1, 2, 3, 4].map((count) {
+                        return DropdownMenuItem(
+                          value: count,
+                          child: Text('$count'),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _ritualsPerDay = value;
+                        _ritualTitles = RitualConfig.getDefaultTitles(value);
+                        _initializeTitleControllers();
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Dynamic title inputs
+          ..._titleControllers.entries.map((entry) {
+            final slotKey = entry.key;
+            final controller = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TextField(
+                controller: controller,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText:
+                      '${slotKey[0].toUpperCase()}${slotKey.substring(1)} Ritual',
+                  labelStyle: const TextStyle(color: AppColors.textSubtle),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                ),
+              ),
+            );
+          }),
+
+          const SizedBox(height: 16),
+
+          // Save button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saveRitualConfig,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Save Configuration',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   String _getInitials() {
@@ -284,6 +513,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+
+              // Ritual Configuration Card
+              _buildRitualConfigCard(),
               const SizedBox(height: 16),
 
               // Preferences List
