@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Added import for Provider
 
 import '../../../../core/models/data_models.dart';
 import '../../../../core/services/supabase_service.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/theme_service.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class HubDashboardAltPage extends StatefulWidget {
   const HubDashboardAltPage({super.key});
@@ -22,6 +24,8 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
     super.initState();
     _loadData();
   }
+
+  AppThemeColors get colors => Provider.of<ThemeService>(context).colors;
 
   Future<void> _loadData() async {
     try {
@@ -52,43 +56,49 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0B1410),
-      child: SafeArea(
-        bottom: false,
-        child:
-            _isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
-                : RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: AppColors.primary,
-                  backgroundColor: AppColors.surfaceDark,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 24,
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+
+        return Container(
+          color: colors.background, // Was hardcoded 0xFF0B1410
+          child: SafeArea(
+            bottom: false,
+            child:
+                _isLoading
+                    ? Center(
+                      child: CircularProgressIndicator(color: colors.primary),
+                    )
+                    : RefreshIndicator(
+                      onRefresh: _loadData,
+                      color: colors.primary,
+                      backgroundColor: colors.surface,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 24,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeader(),
+                            const SizedBox(height: 24),
+                            _buildActivityMap(),
+                            const SizedBox(height: 16),
+                            _buildBrightDaySection(),
+                            const SizedBox(height: 16),
+                            _buildHabitsGrid(),
+                            const SizedBox(height: 24),
+                            _buildReflectionInput(),
+                            const SizedBox(height: 120),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(),
-                        const SizedBox(height: 24),
-                        _buildActivityMap(),
-                        const SizedBox(height: 16),
-                        _buildBrightDaySection(),
-                        const SizedBox(height: 16),
-                        _buildHabitsGrid(),
-                        const SizedBox(height: 24),
-                        _buildReflectionInput(),
-                        const SizedBox(height: 120),
-                      ],
-                    ),
-                  ),
-                ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -101,13 +111,13 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.bolt, color: Color(0xFF00E054), size: 16),
-                SizedBox(width: 4),
+              children: [
+                Icon(Icons.bolt, color: colors.primary, size: 16),
+                const SizedBox(width: 4),
                 Text(
                   "DAILY MOMENTUM",
                   style: TextStyle(
-                    color: Color(0xFF00E054),
+                    color: colors.primary,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -127,16 +137,16 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
             const SizedBox(height: 4),
             Text(
               _getFormattedDate(),
-              style: const TextStyle(color: AppColors.textSubtle, fontSize: 12),
+              style: TextStyle(color: colors.textSubtle, fontSize: 12),
             ),
           ],
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFF12211A),
+            color: colors.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: Row(
             children: [
@@ -193,7 +203,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF12211A),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -202,7 +212,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "Activity Map",
                 style: TextStyle(
                   color: Colors.white,
@@ -213,10 +223,10 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00E054).withValues(alpha: 0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: Text(
                   "+12% vs last month",
                   style: TextStyle(
                     color: Color(0xFF00E054),
@@ -264,8 +274,8 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                     .map(
                       (day) => Text(
                         day.toUpperCase(),
-                        style: const TextStyle(
-                          color: AppColors.textSubtle,
+                        style: TextStyle(
+                          color: colors.textSubtle,
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
@@ -286,7 +296,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF12211A),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -296,7 +306,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
+              Text(
                 "Bright Day",
                 style: TextStyle(
                   color: Colors.white,
@@ -306,7 +316,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
               ),
               Text(
                 "${(percentage * 100).toInt()}%",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF00E054),
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -327,7 +337,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
               widthFactor: percentage,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00E054),
+                  color: colors.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -339,14 +349,11 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
             children: [
               Text(
                 "$completedCount of $totalCount habits completed",
-                style: const TextStyle(
-                  color: AppColors.textSubtle,
-                  fontSize: 10,
-                ),
+                style: TextStyle(color: colors.textSubtle, fontSize: 10),
               ),
               Text(
                 percentage >= 0.8 ? "Almost there!" : "Keep going!",
-                style: const TextStyle(color: Colors.white, fontSize: 10),
+                style: TextStyle(color: Colors.white, fontSize: 10),
               ),
             ],
           ),
@@ -398,7 +405,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
       child: Container(
         height: 160,
         decoration: BoxDecoration(
-          color: const Color(0xFF12211A).withValues(alpha: 0.4),
+          color: colors.surface.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.1),
@@ -415,13 +422,13 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                 color: Colors.white.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add, color: AppColors.textSubtle),
+              child: Icon(Icons.add, color: colors.textSubtle),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               "Add Habit",
               style: TextStyle(
-                color: AppColors.textSubtle,
+                color: colors.textSubtle,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -447,11 +454,11 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
           (context) => StatefulBuilder(
             builder:
                 (context, setState) => AlertDialog(
-                  backgroundColor: const Color(0xFF12211A),
+                  backgroundColor: colors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Add New Habit',
                     style: TextStyle(
                       color: Colors.white,
@@ -465,12 +472,10 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                       children: [
                         TextField(
                           controller: titleController,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white),
                           decoration: InputDecoration(
                             labelText: 'Habit Name',
-                            labelStyle: const TextStyle(
-                              color: AppColors.textSubtle,
-                            ),
+                            labelStyle: TextStyle(color: colors.textSubtle),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
@@ -479,9 +484,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                              ),
+                              borderSide: BorderSide(color: colors.primary),
                             ),
                           ),
                         ),
@@ -491,12 +494,12 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                             Expanded(
                               child: TextField(
                                 controller: goalController,
-                                style: const TextStyle(color: Colors.white),
+                                style: TextStyle(color: Colors.white),
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                   labelText: 'Goal',
-                                  labelStyle: const TextStyle(
-                                    color: AppColors.textSubtle,
+                                  labelStyle: TextStyle(
+                                    color: colors.textSubtle,
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -508,8 +511,8 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.primary,
+                                    borderSide: BorderSide(
+                                      color: colors.primary,
                                     ),
                                   ),
                                 ),
@@ -518,8 +521,8 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                             const SizedBox(width: 12),
                             DropdownButton<String>(
                               value: selectedUnit,
-                              dropdownColor: const Color(0xFF12211A),
-                              style: const TextStyle(color: Colors.white),
+                              dropdownColor: colors.surface,
+                              style: TextStyle(color: Colors.white),
                               items:
                                   ['times', 'hours', 'min', 'L', 'km'].map((
                                     unit,
@@ -536,9 +539,9 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Icon:',
-                          style: TextStyle(color: AppColors.textSubtle),
+                          style: TextStyle(color: colors.textSubtle),
                         ),
                         const SizedBox(height: 8),
                         Wrap(
@@ -560,7 +563,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                                     decoration: BoxDecoration(
                                       color:
                                           selectedIcon == icon
-                                              ? AppColors.primary.withValues(
+                                              ? colors.primary.withValues(
                                                 alpha: 0.2,
                                               )
                                               : Colors.white.withValues(
@@ -570,7 +573,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                                       border: Border.all(
                                         color:
                                             selectedIcon == icon
-                                                ? AppColors.primary
+                                                ? colors.primary
                                                 : Colors.transparent,
                                       ),
                                     ),
@@ -584,9 +587,9 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                               }).toList(),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Color:',
-                          style: TextStyle(color: AppColors.textSubtle),
+                          style: TextStyle(color: colors.textSubtle),
                         ),
                         const SizedBox(height: 8),
                         Wrap(
@@ -628,9 +631,9 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
-                        style: TextStyle(color: AppColors.textSubtle),
+                        style: TextStyle(color: colors.textSubtle),
                       ),
                     ),
                     ElevatedButton(
@@ -651,7 +654,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: colors.primary,
                         foregroundColor: Colors.black,
                       ),
                       child: const Text('Create'),
@@ -667,22 +670,17 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.green.withValues(alpha: 0.2),
-            const Color(0xFF12211A),
-          ],
+          colors: [Colors.green.withValues(alpha: 0.2), colors.surface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF00E054).withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
       ),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF12211A).withValues(alpha: 0.9),
+          color: colors.surface.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -696,7 +694,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Color(0xFF00E054),
                         shape: BoxShape.circle,
                       ),
@@ -713,9 +711,9 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                     ),
                   ],
                 ),
-                const Text(
+                Text(
                   "2 min",
-                  style: TextStyle(color: AppColors.textSubtle, fontSize: 12),
+                  style: TextStyle(color: colors.textSubtle, fontSize: 12),
                 ),
               ],
             ),
@@ -729,9 +727,9 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               "Identify the blockers to ensure a 1% better tomorrow.",
-              style: TextStyle(color: AppColors.textSubtle, fontSize: 12),
+              style: TextStyle(color: colors.textSubtle, fontSize: 12),
             ),
             const SizedBox(height: 20),
             Container(
@@ -745,7 +743,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                 children: [
                   Expanded(
                     child: TextField(
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: "Type here or use voice...",
                         hintStyle: TextStyle(
@@ -757,7 +755,7 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
                   ),
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Color(0xFF00E054),
                       borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
@@ -790,11 +788,11 @@ class _HubDashboardAltPageState extends State<HubDashboardAltPage> {
   }
 
   Color _getColor(String? colorHex) {
-    if (colorHex == null) return AppColors.primary;
+    if (colorHex == null) return colors.primary;
     try {
       return Color(int.parse(colorHex.replaceAll('#', '0xFF')));
     } catch (e) {
-      return AppColors.primary;
+      return colors.primary;
     }
   }
 }
@@ -825,6 +823,8 @@ class _HabitCardState extends State<HabitCard> {
     _currentValue = widget.log?.currentValue ?? 0.0;
   }
 
+  AppThemeColors get colors => Provider.of<ThemeService>(context).colors;
+
   @override
   void didUpdateWidget(covariant HabitCard oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -837,7 +837,7 @@ class _HabitCardState extends State<HabitCard> {
     try {
       return Color(int.parse(hexColor.replaceFirst('#', '0xFF')));
     } catch (e) {
-      return AppColors.primary;
+      return colors.primary;
     }
   }
 
@@ -870,7 +870,7 @@ class _HabitCardState extends State<HabitCard> {
       height: 160,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF12211A),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -896,7 +896,7 @@ class _HabitCardState extends State<HabitCard> {
             children: [
               Text(
                 widget.habit.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -910,10 +910,7 @@ class _HabitCardState extends State<HabitCard> {
                 children: [
                   Text(
                     "${_currentValue.toStringAsFixed(1)}${widget.habit.goalUnit} / ${widget.habit.goalValue}${widget.habit.goalUnit}",
-                    style: const TextStyle(
-                      color: AppColors.textSubtle,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: colors.textSubtle, fontSize: 12),
                   ),
                   if (isDone)
                     Text(

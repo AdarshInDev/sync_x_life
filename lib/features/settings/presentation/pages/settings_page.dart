@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/models/data_models.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -49,379 +52,402 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.tune,
-                        color: AppColors.secondary,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "PREFERENCES",
-                        style: TextStyle(
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          letterSpacing: 1.5,
-                          shadows: [
-                            Shadow(
-                              color: AppColors.secondary.withValues(alpha: 0.4),
-                              blurRadius: 10,
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.tune,
+                            color: AppColors.secondary,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "PREFERENCES",
+                            style: TextStyle(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              letterSpacing: 1.5,
+                              shadows: [
+                                Shadow(
+                                  color: AppColors.secondary.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  blurRadius: 10,
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Settings",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          fontFamily: 'Space Grotesk',
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Settings",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      fontFamily: 'Space Grotesk',
-                    ),
-                  ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-          // Profile Card
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-            ),
-            child: Row(
-              children: [
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.5),
-                            AppColors.secondary.withValues(alpha: 0.5),
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                )
-                                : Text(
-                                  _getInitials(),
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                      ),
-                    ),
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: const Icon(
-                        Icons.edit,
-                        color: AppColors.primary,
-                        size: 14,
-                      ),
-                    ),
-                  ],
+              // Profile Card
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
                 ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _profile?.username ?? 'User',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.local_fire_department,
-                            color: Colors.orange,
-                            size: 18,
+                child: Row(
+                  children: [
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.primary.withValues(alpha: 0.5),
+                                AppColors.secondary.withValues(alpha: 0.5),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                                blurRadius: 15,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 4),
+                          child: Center(
+                            child:
+                                _isLoading
+                                    ? const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    )
+                                    : Text(
+                                      _getInitials(),
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                          ),
+                        ),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceDark,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            color: AppColors.primary,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            "${_profile?.streakCount ?? 0} Day Streak",
+                            _profile?.username ?? 'User',
                             style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.local_fire_department,
+                                color: Colors.orange,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "${_profile?.streakCount ?? 0} Day Streak",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _profile?.createdAt != null
+                                ? "Member since ${_profile!.createdAt.year}"
+                                : "New Member",
+                            style: const TextStyle(
+                              color: AppColors.textSubtle,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _profile?.createdAt != null
-                            ? "Member since ${_profile!.createdAt.year}"
-                            : "New Member",
-                        style: const TextStyle(
-                          color: AppColors.textSubtle,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Grid Actions
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.shield_outlined,
-                  title: "Account & Security",
-                  subtitle: "Password, Email, 2FA",
-                  color: AppColors.textPrimary,
-                  hoverColor: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.palette_outlined,
-                  title: "App Theme",
-                  subtitle: "Neon Green (Active)",
-                  color: AppColors.textPrimary,
-                  hoverColor: AppColors.primary,
-                  extra: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "App Theme",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                  useCustomTitle: true,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Preferences List
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.secondary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.graphic_eq,
-                        color: AppColors.secondary,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Sync Preferences",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          "Customize your experience",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSubtle,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                _buildSwitchRow(
-                  Icons.mic,
-                  "Voice-to-Sync",
-                  true,
-                  AppColors.primary,
-                ),
-                const SizedBox(height: 12),
-                _buildSwitchRow(
-                  Icons.notifications_active_outlined,
-                  "Daily Digest",
-                  false,
-                  AppColors.textSubtle,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.dataset_outlined,
-                  title: "Data Management",
-                  subtitle: "Export or Clear Data",
-                  color: AppColors.textPrimary,
-                  hoverColor: AppColors.secondary,
-                ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.logout,
-                  title: "Log Out",
-                  subtitle: "Sign out of account",
-                  color: AppColors.textPrimary,
-                  hoverColor: Colors.red,
-                  onTap: () async {
-                    final shouldLogout = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            backgroundColor: AppColors.surfaceDark,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            title: const Text(
-                              'Log Out',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            content: const Text(
-                              'Are you sure you want to log out?',
-                              style: TextStyle(color: AppColors.textSubtle),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(false),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(color: AppColors.textSubtle),
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+
+              // Grid Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionCard(
+                      icon: Icons.shield_outlined,
+                      title: "Account & Security",
+                      subtitle: "Password, Email, 2FA",
+                      color: AppColors.textPrimary,
+                      hoverColor: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => showThemeSelector(context),
+                      child: Consumer<ThemeService>(
+                        builder: (context, themeService, child) {
+                          return _buildActionCard(
+                            icon: Icons.palette_outlined,
+                            title: "App Theme",
+                            subtitle: themeService.currentTheme.name,
+                            color: AppColors.textPrimary,
+                            hoverColor: AppColors.primary,
+                            extra: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "App Theme",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
                                 ),
-                                child: const Text('Log Out'),
-                              ),
-                            ],
-                          ),
-                    );
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        themeService
+                                            .currentTheme
+                                            .colors
+                                            .primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            useCustomTitle: true,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
 
-                    if (shouldLogout == true) {
-                      await SupabaseService().signOut();
-                      // AuthGate handles navigation
-                    }
-                  },
+              // Preferences List
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.secondary.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.graphic_eq,
+                            color: AppColors.secondary,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Sync Preferences",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              "Customize your experience",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSubtle,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSwitchRow(
+                      Icons.mic,
+                      "Voice-to-Sync",
+                      true,
+                      AppColors.primary,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSwitchRow(
+                      Icons.notifications_active_outlined,
+                      "Daily Digest",
+                      false,
+                      AppColors.textSubtle,
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionCard(
+                      icon: Icons.dataset_outlined,
+                      title: "Data Management",
+                      subtitle: "Export or Clear Data",
+                      color: AppColors.textPrimary,
+                      hoverColor: AppColors.secondary,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildActionCard(
+                      icon: Icons.logout,
+                      title: "Log Out",
+                      subtitle: "Sign out of account",
+                      color: AppColors.textPrimary,
+                      hoverColor: Colors.red,
+                      onTap: () async {
+                        final shouldLogout = await showDialog<bool>(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                backgroundColor: AppColors.surfaceDark,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                title: const Text(
+                                  'Log Out',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                content: const Text(
+                                  'Are you sure you want to log out?',
+                                  style: TextStyle(color: AppColors.textSubtle),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(false),
+                                    child: const Text(
+                                      'Cancel',
+                                      style: TextStyle(
+                                        color: AppColors.textSubtle,
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(true),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text('Log Out'),
+                                  ),
+                                ],
+                              ),
+                        );
+
+                        if (shouldLogout == true) {
+                          await SupabaseService().signOut();
+                          // AuthGate handles navigation
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              const Center(
+                child: Text(
+                  "Sync X Life v2.4.0 (Build 3902)",
+                  style: TextStyle(
+                    color: AppColors.textSubtle,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 120), // Bottom padding for nav bar
             ],
           ),
-          const SizedBox(height: 32),
-          const Center(
-            child: Text(
-              "Sync X Life v2.4.0 (Build 3902)",
-              style: TextStyle(
-                color: AppColors.textSubtle,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          const SizedBox(height: 120), // Bottom padding for nav bar
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -549,6 +575,142 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void showThemeSelector(BuildContext context) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder:
+          (context) => Container(
+            decoration: BoxDecoration(
+              color: themeService.colors.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Choose Theme",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Select your preferred color scheme",
+                  style: TextStyle(color: Colors.white60, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+                ...AppTheme.allThemes.map((theme) {
+                  final isSelected =
+                      themeService.currentTheme.type == theme.type;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: GestureDetector(
+                      onTap: () {
+                        themeService.setTheme(theme);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? theme.colors.surfaceHighlight
+                                  : theme.colors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color:
+                                isSelected
+                                    ? theme.colors.primary
+                                    : Colors.white.withValues(alpha: 0.1),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: theme.colors.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    theme.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      buildColorDot(theme.colors.primary),
+                                      const SizedBox(width: 6),
+                                      buildColorDot(theme.colors.accent),
+                                      const SizedBox(width: 6),
+                                      buildColorDot(theme.colors.success),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                color: theme.colors.primary,
+                                size: 28,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                SizedBox(height: MediaQuery.of(context).padding.bottom),
+              ],
+            ),
+          ),
+    );
+  }
+
+  Widget buildColorDot(Color color) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white24, width: 1),
       ),
     );
   }

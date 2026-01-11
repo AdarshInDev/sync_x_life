@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/models/data_models.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/audio_recorder_widget.dart';
 import 'reflection_history_page.dart';
@@ -105,111 +107,117 @@ class _ReflectionPageState extends State<ReflectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF050B08), // background-dark from HTML
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildProgressSection(),
-              const SizedBox(height: 32),
-              _buildInputCard(
-                title: "Highlight of the Day",
-                icon: Icons.emoji_events,
-                color: AppColors.accentYellow,
-                hint: "What was your biggest win today?",
-                controller: _highlightController,
-              ),
-              const SizedBox(height: 20),
-              _buildInputCard(
-                title: "One Blocker",
-                icon: Icons.block,
-                color: AppColors.error,
-                hint: "What stopped you from flowing?",
-                controller: _blockerController,
-              ),
-              const SizedBox(height: 20),
-              _buildInputCard(
-                title: "1% Better Tomorrow",
-                icon: Icons.trending_up,
-                color: AppColors.accentBlue,
-                hint: "One specific thing to improve tomorrow...",
-                controller: _improvementController,
-              ),
-              const SizedBox(height: 32),
-              AudioRecorderWidget(
-                onRecordingComplete: (path, transcript) {
-                  setState(() {
-                    _recordedAudioPath = path;
-                    _audioTranscript = transcript;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        '✅ Recording saved! Complete the ritual to upload and save.',
-                      ),
-                      backgroundColor: AppColors.primary,
-                    ),
-                  );
-                },
-                onCancel: () {
-                  setState(() {
-                    _recordedAudioPath = null;
-                    _audioTranscript = null;
-                  });
-                },
-              ),
-              const SizedBox(height: 32),
-              _buildSyncInsightsCard(),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _isSaving ? null : _saveReflection,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+
+        return Scaffold(
+          backgroundColor: colors.background, // Was hardcoded 0xFF050B08
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildHeader(), // Note: Header internals still use AppColors, might need deeper update
+                  const SizedBox(height: 32),
+                  _buildProgressSection(),
+                  const SizedBox(height: 32),
+                  _buildInputCard(
+                    title: "Highlight of the Day",
+                    icon: Icons.emoji_events,
+                    color: colors.warning,
+                    hint: "What was your biggest win today?",
+                    controller: _highlightController,
                   ),
-                  shadowColor: AppColors.primary.withValues(alpha: 0.5),
-                  elevation: 10,
-                ),
-                child:
-                    _isSaving
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.black,
-                            ),
+                  const SizedBox(height: 20),
+                  _buildInputCard(
+                    title: "One Blocker",
+                    icon: Icons.block,
+                    color: colors.error,
+                    hint: "What stopped you from flowing?",
+                    controller: _blockerController,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInputCard(
+                    title: "1% Better Tomorrow",
+                    icon: Icons.trending_up,
+                    color: colors.primary,
+                    hint: "One specific thing to improve tomorrow...",
+                    controller: _improvementController,
+                  ),
+                  const SizedBox(height: 32),
+                  AudioRecorderWidget(
+                    onRecordingComplete: (path, transcript) {
+                      setState(() {
+                        _recordedAudioPath = path;
+                        _audioTranscript = transcript;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '✅ Recording saved! Complete the ritual to upload and save.',
                           ),
-                        )
-                        : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.check_circle_outline),
-                            SizedBox(width: 8),
-                            Text(
-                              "Complete Ritual",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                          backgroundColor: colors.primary,
                         ),
+                      );
+                    },
+                    onCancel: () {
+                      setState(() {
+                        _recordedAudioPath = null;
+                        _audioTranscript = null;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  _buildSyncInsightsCard(),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: _isSaving ? null : _saveReflection,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      shadowColor: colors.primary.withValues(alpha: 0.5),
+                      elevation: 10,
+                    ),
+                    child:
+                        _isSaving
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.black,
+                                ),
+                              ),
+                            )
+                            : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.check_circle_outline),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Complete Ritual",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                  ),
+                  const SizedBox(height: 120), // Bottom Nav Clearance
+                ],
               ),
-              const SizedBox(height: 120), // Bottom Nav Clearance
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

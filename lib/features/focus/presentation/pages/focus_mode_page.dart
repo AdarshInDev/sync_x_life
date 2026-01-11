@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/models/data_models.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../services/focus_music_service.dart';
 import '../widgets/focus_player_widget.dart';
@@ -329,47 +331,54 @@ class _FocusModePageState extends State<FocusModePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundDark,
-      child: SafeArea(
-        bottom: false,
-        child:
-            _isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
-                : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildHeader(),
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: _loadTasks,
-                        color: AppColors.primary,
-                        backgroundColor: AppColors.surfaceDark,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            children: [
-                              _buildTimerSection(),
-                              if (!_isPomodoroMode) ...[
-                                const SizedBox(height: 24),
-                                _buildCurrentFocusCard(),
-                                const SizedBox(height: 24),
-                                _buildUpNextList(),
-                              ],
-                              const SizedBox(height: 200),
-                            ],
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+
+        return Container(
+          color:
+              colors.background, // Was backgroundDark, but should match theme
+          child: SafeArea(
+            bottom: false,
+            child:
+                _isLoading
+                    ? Center(
+                      child: CircularProgressIndicator(color: colors.primary),
+                    )
+                    : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildHeader(),
+                        Expanded(
+                          child: RefreshIndicator(
+                            onRefresh: _loadTasks,
+                            color: colors.primary,
+                            backgroundColor: colors.surface,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                children: [
+                                  _buildTimerSection(),
+                                  if (!_isPomodoroMode) ...[
+                                    const SizedBox(height: 24),
+                                    _buildCurrentFocusCard(),
+                                    const SizedBox(height: 24),
+                                    _buildUpNextList(),
+                                  ],
+                                  const SizedBox(height: 200),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        _buildMusicPlayer(),
+                        const SizedBox(height: 110), // Bottom Nav Bar padding
+                      ],
                     ),
-                    _buildMusicPlayer(),
-                    const SizedBox(height: 110), // Bottom Nav Bar padding
-                  ],
-                ),
-      ),
+          ),
+        );
+      },
     );
   }
 

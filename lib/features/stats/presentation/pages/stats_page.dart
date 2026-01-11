@@ -1,50 +1,71 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 
-class StatsPage extends StatelessWidget {
+class StatsPage extends StatefulWidget {
   const StatsPage({super.key});
 
   @override
+  State<StatsPage> createState() => _StatsPageState();
+}
+
+class _StatsPageState extends State<StatsPage> {
+  AppThemeColors get colors => Provider.of<ThemeService>(context).colors;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.background,
-      child: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            // TODO: Implement actual data fetching
-            await Future.delayed(const Duration(milliseconds: 1500));
-          },
-          color: AppColors.primary,
-          backgroundColor: AppColors.surfaceDark,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 24),
-                _buildMoodChart(),
-                const SizedBox(height: 20),
-                Row(
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
+
+        return Container(
+          color:
+              colors
+                  .background, // Was hardcoded colors.background (which was static)
+          child: SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                // TODO: Implement actual data fetching
+                await Future.delayed(const Duration(milliseconds: 1500));
+              },
+              color: colors.primary,
+              backgroundColor: colors.surface,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildProdScoreCard()),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildAvgMoodCard()),
+                    _buildHeader(), // Internal widgets still refer to AppColors, may need refactor if they are static
+                    const SizedBox(height: 24),
+                    _buildMoodChart(),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(child: _buildProdScoreCard()),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildAvgMoodCard()),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    _buildBlockerCard(),
+                    const SizedBox(height: 120), // Bottom Nav Clearance
                   ],
                 ),
-                const SizedBox(height: 20),
-                _buildBlockerCard(),
-                const SizedBox(height: 120), // Bottom Nav Clearance
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -58,18 +79,18 @@ class StatsPage extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.insights, size: 14, color: AppColors.secondary),
+                Icon(Icons.insights, size: 14, color: colors.accent),
                 const SizedBox(width: 4),
                 Text(
                   "WEEKLY REPORT",
                   style: TextStyle(
-                    color: AppColors.secondary,
+                    color: colors.accent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
                     shadows: [
                       BoxShadow(
-                        color: AppColors.secondary.withValues(alpha: 0.4),
+                        color: colors.accent.withValues(alpha: 0.4),
                         blurRadius: 10,
                       ),
                     ],
@@ -91,10 +112,10 @@ class StatsPage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Text(
+            Text(
               "Oct 18 - Oct 24",
               style: TextStyle(
-                color: AppColors.textSubtle,
+                color: colors.textSubtle,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -102,12 +123,12 @@ class StatsPage extends StatelessWidget {
             const SizedBox(height: 2),
             Row(
               children: [
-                Icon(Icons.trending_up, size: 14, color: AppColors.primary),
+                Icon(Icons.trending_up, size: 14, color: colors.primary),
                 const SizedBox(width: 4),
-                const Text(
+                Text(
                   "+12% vs last week",
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: colors.primary,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -124,7 +145,7 @@ class StatsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -143,9 +164,9 @@ class StatsPage extends StatelessWidget {
               ),
               Row(
                 children: [
-                  _buildLegendDot("Output", AppColors.primary),
+                  _buildLegendDot("Output", colors.primary),
                   const SizedBox(width: 12),
-                  _buildLegendDot("Mood", AppColors.secondary),
+                  _buildLegendDot("Mood", colors.accent),
                 ],
               ),
             ],
@@ -181,7 +202,9 @@ class StatsPage extends StatelessWidget {
                   ],
                 ),
                 // Overlay Line Chart (CustomPaint)
-                Positioned.fill(child: CustomPaint(painter: _ChartPainter())),
+                Positioned.fill(
+                  child: CustomPaint(painter: _ChartPainter(colors: colors)),
+                ),
               ],
             ),
           ),
@@ -205,10 +228,7 @@ class StatsPage extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: const TextStyle(color: AppColors.textSubtle, fontSize: 12),
-        ),
+        Text(label, style: TextStyle(color: colors.textSubtle, fontSize: 12)),
       ],
     );
   }
@@ -228,14 +248,14 @@ class StatsPage extends StatelessWidget {
           decoration: BoxDecoration(
             color:
                 isActive
-                    ? AppColors.primary
-                    : AppColors.primary.withValues(alpha: 0.3),
+                    ? colors.primary
+                    : colors.primary.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
             boxShadow:
                 isActive
                     ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
+                        color: colors.primary.withValues(alpha: 0.4),
                         blurRadius: 8,
                       ),
                     ]
@@ -246,7 +266,7 @@ class StatsPage extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: isActive ? Colors.white : AppColors.textSubtle,
+            color: isActive ? Colors.white : colors.textSubtle,
             fontSize: 10,
             fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
           ),
@@ -260,7 +280,7 @@ class StatsPage extends StatelessWidget {
       height: 180,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -279,17 +299,13 @@ class StatsPage extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
-                      Icons.bolt,
-                      color: AppColors.primary,
-                      size: 18,
-                    ),
+                    child: Icon(Icons.bolt, color: colors.primary, size: 18),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     "PROD. SCORE",
                     style: TextStyle(
-                      color: AppColors.textSubtle,
+                      color: colors.textSubtle,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
@@ -312,17 +328,17 @@ class StatsPage extends StatelessWidget {
                           color: Colors.white,
                           shadows: [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.4),
+                              color: colors.primary.withValues(alpha: 0.4),
                               blurRadius: 10,
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Text(
+                      Text(
                         "%",
                         style: TextStyle(
-                          color: AppColors.textSubtle,
+                          color: colors.textSubtle,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -336,16 +352,16 @@ class StatsPage extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: colors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(100),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: colors.primary.withValues(alpha: 0.2),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Top 5%",
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: colors.primary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -362,7 +378,7 @@ class StatsPage extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: colors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ).blur(20),
@@ -377,7 +393,7 @@ class StatsPage extends StatelessWidget {
       height: 180,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -396,17 +412,17 @@ class StatsPage extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.sentiment_satisfied,
-                      color: AppColors.secondary,
+                      color: colors.accent,
                       size: 18,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     "AVG MOOD",
                     style: TextStyle(
-                      color: AppColors.textSubtle,
+                      color: colors.textSubtle,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
@@ -438,11 +454,11 @@ class StatsPage extends StatelessWidget {
                       widthFactor: 0.8,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.secondary,
+                          color: colors.accent,
                           borderRadius: BorderRadius.circular(4),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.secondary.withValues(alpha: 0.6),
+                              color: colors.accent.withValues(alpha: 0.6),
                               blurRadius: 8,
                             ),
                           ],
@@ -451,10 +467,10 @@ class StatsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     "14h in deep work",
                     style: TextStyle(
-                      color: AppColors.textSubtle,
+                      color: colors.textSubtle,
                       fontSize: 10,
                       height: 1.2,
                     ),
@@ -470,7 +486,7 @@ class StatsPage extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.secondary.withValues(alpha: 0.1),
+                color: colors.accent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ).blur(20),
@@ -484,7 +500,7 @@ class StatsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -502,26 +518,22 @@ class StatsPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.error.withValues(alpha: 0.1),
+                          color: colors.error.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: AppColors.error.withValues(alpha: 0.2),
+                            color: colors.error.withValues(alpha: 0.2),
                           ),
                         ),
-                        child: const Icon(
-                          Icons.block,
-                          color: AppColors.error,
-                          size: 18,
-                        ),
+                        child: Icon(Icons.block, color: colors.error, size: 18),
                       ),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "TOP BLOCKER",
                             style: TextStyle(
-                              color: AppColors.textSubtle,
+                              color: colors.textSubtle,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.2,
@@ -543,18 +555,18 @@ class StatsPage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text(
+                      Text(
                         "-4.5h",
                         style: TextStyle(
-                          color: AppColors.error,
+                          color: colors.error,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Text(
+                      Text(
                         "Total Loss",
                         style: TextStyle(
-                          color: AppColors.textSubtle,
+                          color: colors.textSubtle,
                           fontSize: 10,
                         ),
                       ),
@@ -567,14 +579,14 @@ class StatsPage extends StatelessWidget {
                 "Social Media",
                 "2h 15m",
                 0.6,
-                AppColors.error.withValues(alpha: 0.8),
+                colors.error.withValues(alpha: 0.8),
               ),
               const SizedBox(height: 16),
               _buildBlockerItem(
                 "Slack / Comms",
                 "1h 45m",
                 0.45,
-                AppColors.error.withValues(alpha: 0.5),
+                colors.error.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -589,7 +601,7 @@ class StatsPage extends StatelessWidget {
                   begin: Alignment.centerRight,
                   end: Alignment.centerLeft,
                   colors: [
-                    AppColors.error.withValues(alpha: 0.05),
+                    colors.error.withValues(alpha: 0.05),
                     Colors.transparent,
                   ],
                 ),
@@ -614,16 +626,16 @@ class StatsPage extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSubtle,
+              style: TextStyle(
+                color: colors.textSubtle,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               time,
-              style: const TextStyle(
-                color: AppColors.textSubtle,
+              style: TextStyle(
+                color: colors.textSubtle,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
               ),
@@ -659,57 +671,72 @@ class StatsPage extends StatelessWidget {
 }
 
 class _ChartPainter extends CustomPainter {
+  final AppThemeColors colors;
+
+  _ChartPainter({required this.colors});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint =
         Paint()
-          ..color = AppColors.secondary
+          ..color = colors.accent
           ..strokeWidth = 2.0
           ..style = PaintingStyle.stroke;
 
     final path = Path();
-    // Approximate points based on image (Mon -> Sun)
-    final points = [
-      Offset(size.width * 0.07, size.height * 0.6), // Mon
-      Offset(size.width * 0.21, size.height * 0.5), // Tue
-      Offset(size.width * 0.35, size.height * 0.4), // Wed
-      Offset(size.width * 0.50, size.height * 0.2), // Thu
-      Offset(size.width * 0.64, size.height * 0.35), // Fri
-      Offset(size.width * 0.78, size.height * 0.45), // Sat
-      Offset(size.width * 0.92, size.height * 0.25), // Sun
-    ];
+    final width = size.width;
+    final height = size.height;
 
-    path.moveTo(points[0].dx, points[0].dy);
-    for (int i = 1; i < points.length; i++) {
-      path.lineTo(points[i].dx, points[i].dy);
-    }
+    // Generate smooth curve points based on data
+    path.moveTo(0, height * 0.7);
+
+    // Hardcoded control points for smoother curve - matching design
+    // In a real app these would be calculated from data points
+    path.cubicTo(
+      width * 0.2,
+      height * 0.8,
+      width * 0.3,
+      height * 0.4,
+      width * 0.5,
+      height * 0.5,
+    );
+
+    path.cubicTo(
+      width * 0.7,
+      height * 0.6,
+      width * 0.8,
+      height * 0.3,
+      width,
+      height * 0.4,
+    );
 
     // Shadow for line
-    canvas.drawShadow(
-      path,
-      AppColors.secondary.withValues(alpha: 0.5),
-      3.0,
-      true,
-    );
+    canvas.drawShadow(path, colors.accent.withValues(alpha: 0.5), 3.0, true);
 
     canvas.drawPath(path, paint);
 
     // Draw dots
-    final dotPaint = Paint()..color = AppColors.surfaceDark;
+    final dotPaint = Paint()..color = colors.surface;
     final dotStroke =
         Paint()
-          ..color = AppColors.secondary
+          ..color = colors.accent
           ..strokeWidth = 2.0
           ..style = PaintingStyle.stroke;
 
+    // Draw a few data points
+    final points = [
+      Offset(width * 0.5, height * 0.5),
+      Offset(width, height * 0.4),
+    ];
+
     for (var point in points) {
-      canvas.drawCircle(point, 3.0, dotPaint);
-      canvas.drawCircle(point, 3.0, dotStroke);
+      canvas.drawCircle(point, 4, dotPaint);
+      canvas.drawCircle(point, 4, dotStroke);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 extension _StatsBlurExt on Widget {

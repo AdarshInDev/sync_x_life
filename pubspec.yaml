@@ -57,6 +57,7 @@ dependencies:
   youtube_explode_dart: ^3.0.5
   animated_notch_bottom_bar: ^1.0.0
   audio_service: ^0.18.18
+  provider: ^6.1.2
 
 
 dev_dependencies:

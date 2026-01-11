@@ -1,7 +1,8 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/theme_service.dart';
 import '../../../../features/focus/presentation/pages/focus_mode_page.dart';
 import '../../../../features/reflection/presentation/pages/reflection_page.dart';
 import '../../../../features/settings/presentation/pages/settings_page.dart';
@@ -35,114 +36,123 @@ class _MainHubPageState extends State<MainHubPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            // Persistent Background Glow
-            Positioned(
-              top: -100,
-              right: -100,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  backgroundBlendMode: BlendMode.plus,
-                ),
-              ).blur(100),
-            ),
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        final colors = themeService.colors;
 
-            // Content
-            PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: _pages,
-            ),
-
-            // Animated Bottom Bar
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: AnimatedNotchBottomBar(
-                notchBottomBarController: _controller,
-                color: AppColors.surfaceHighlight,
-                showLabel: true,
-                shadowElevation: 5,
-                kBottomRadius: 28.0,
-                notchColor: AppColors.primary,
-                removeMargins: false,
-                bottomBarWidth: MediaQuery.of(context).size.width,
-                durationInMilliSeconds: 300,
-                itemLabelStyle: const TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textSubtle,
+        return Scaffold(
+          backgroundColor: colors.background,
+          body: SafeArea(
+            bottom: false,
+            child: Stack(
+              children: [
+                // Persistent Background Glow
+                Positioned(
+                  top: -100,
+                  right: -100,
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colors.primary.withValues(alpha: 0.1),
+                      backgroundBlendMode: BlendMode.plus,
+                    ),
+                  ).blur(100),
                 ),
-                elevation: 1,
-                bottomBarItems: const [
-                  BottomBarItem(
-                    inActiveItem: Icon(
-                      Icons.timer_outlined,
-                      color: AppColors.textSubtle,
+
+                // Content
+                PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: _pages,
+                ),
+
+                // Animated Bottom Bar
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedNotchBottomBar(
+                    notchBottomBarController: _controller,
+                    color: colors.surfaceHighlight,
+                    showLabel: true,
+                    shadowElevation: 5,
+                    kBottomRadius: 28.0,
+                    notchColor: colors.primary,
+                    removeMargins: false,
+                    bottomBarWidth: MediaQuery.of(context).size.width,
+                    durationInMilliSeconds: 300,
+                    itemLabelStyle: TextStyle(
+                      fontSize: 10,
+                      color: colors.textSubtle,
                     ),
-                    activeItem: Icon(
-                      Icons.timer,
-                      color: Colors.black,
-                    ), // Black on Primary notch
-                    itemLabel: 'Focus',
+                    elevation: 1,
+                    bottomBarItems: [
+                      BottomBarItem(
+                        inActiveItem: Icon(
+                          Icons.timer_outlined,
+                          color: colors.textSubtle,
+                        ),
+                        activeItem: const Icon(
+                          Icons.timer,
+                          color: Colors.black,
+                        ),
+                        itemLabel: 'Focus',
+                      ),
+                      BottomBarItem(
+                        inActiveItem: Icon(
+                          Icons.grid_view_outlined,
+                          color: colors.textSubtle,
+                        ),
+                        activeItem: const Icon(
+                          Icons.grid_view_rounded,
+                          color: Colors.black,
+                        ),
+                        itemLabel: 'Hub',
+                      ),
+                      BottomBarItem(
+                        inActiveItem: Icon(
+                          Icons.spa_outlined,
+                          color: colors.textSubtle,
+                        ),
+                        activeItem: const Icon(Icons.spa, color: Colors.black),
+                        itemLabel: 'Ritual',
+                      ),
+                      BottomBarItem(
+                        inActiveItem: Icon(
+                          Icons.bar_chart_outlined,
+                          color: colors.textSubtle,
+                        ),
+                        activeItem: const Icon(
+                          Icons.bar_chart_rounded,
+                          color: Colors.black,
+                        ),
+                        itemLabel: 'Stats',
+                      ),
+                      BottomBarItem(
+                        inActiveItem: Icon(
+                          Icons.settings_outlined,
+                          color: colors.textSubtle,
+                        ),
+                        activeItem: const Icon(
+                          Icons.settings,
+                          color: Colors.black,
+                        ),
+                        itemLabel: 'Settings',
+                      ),
+                    ],
+                    onTap: (index) {
+                      _pageController.jumpToPage(index);
+                    },
+                    kIconSize: 24.0,
                   ),
-                  BottomBarItem(
-                    inActiveItem: Icon(
-                      Icons.grid_view_outlined,
-                      color: AppColors.textSubtle,
-                    ),
-                    activeItem: Icon(
-                      Icons.grid_view_rounded,
-                      color: Colors.black,
-                    ),
-                    itemLabel: 'Hub',
-                  ),
-                  BottomBarItem(
-                    inActiveItem: Icon(
-                      Icons.spa_outlined,
-                      color: AppColors.textSubtle,
-                    ),
-                    activeItem: Icon(Icons.spa, color: Colors.black),
-                    itemLabel: 'Ritual',
-                  ),
-                  BottomBarItem(
-                    inActiveItem: Icon(
-                      Icons.bar_chart_outlined,
-                      color: AppColors.textSubtle,
-                    ),
-                    activeItem: Icon(
-                      Icons.bar_chart_rounded,
-                      color: Colors.black,
-                    ),
-                    itemLabel: 'Stats',
-                  ),
-                  BottomBarItem(
-                    inActiveItem: Icon(
-                      Icons.settings_outlined,
-                      color: AppColors.textSubtle,
-                    ),
-                    activeItem: Icon(Icons.settings, color: Colors.black),
-                    itemLabel: 'Settings',
-                  ),
-                ],
-                onTap: (index) {
-                  _pageController.jumpToPage(index);
-                },
-                kIconSize: 24.0,
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
